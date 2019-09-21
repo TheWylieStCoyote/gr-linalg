@@ -20,5 +20,6 @@
 
 install(FILES
     linalg_multiply_cc.block.yml
-    linalg_multiply_cc.block.yml DESTINATION share/gnuradio/grc/blocks
+    linalg_multiply_cc.block.yml
+    linalg_stream_to_matrix_cc.block.yml DESTINATION share/gnuradio/grc/blocks
 )

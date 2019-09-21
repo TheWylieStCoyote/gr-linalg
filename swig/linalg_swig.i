@@ -9,10 +9,14 @@
 
 %{
 #include "linalg/multiply_cc.h"
+#include "linalg/stream_to_matrix_cc.h"
 #include "linalg/multiply_cc.h"
+#include "linalg/stream_to_matrix_cc.h"
 %}
 
 %include "linalg/multiply_cc.h"
 GR_SWIG_BLOCK_MAGIC2(linalg, multiply_cc);
 %include "linalg/multiply_cc.h"
 GR_SWIG_BLOCK_MAGIC2(linalg, multiply_cc);
+%include "linalg/stream_to_matrix_cc.h"
+GR_SWIG_BLOCK_MAGIC2(linalg, stream_to_matrix_cc);

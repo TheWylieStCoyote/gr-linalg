@@ -24,5 +24,6 @@
 install(FILES
     api.h
     multiply_cc.h
-    multiply_cc.h DESTINATION include/linalg
+    multiply_cc.h
+    stream_to_matrix_cc.h DESTINATION include/linalg
 )
