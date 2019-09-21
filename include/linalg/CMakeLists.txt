@@ -23,5 +23,6 @@
 ########################################################################
 install(FILES
     api.h
+    multiply_cc.h
     multiply_cc.h DESTINATION include/linalg
 )

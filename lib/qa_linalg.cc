@@ -28,11 +28,13 @@
 
 #include "qa_linalg.h"
 #include "qa_multiply_cc.h"
+#include "qa_multiply_cc.h"
 
 CppUnit::TestSuite *
 qa_linalg::suite()
 {
   CppUnit::TestSuite *s = new CppUnit::TestSuite("linalg");
+  s->addTest(gr::linalg::qa_multiply_cc::suite());
   s->addTest(gr::linalg::qa_multiply_cc::suite());
 
   return s;
