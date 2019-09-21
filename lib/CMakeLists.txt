@@ -24,6 +24,7 @@
 include(GrPlatform) #define LIB_SUFFIX
 
 list(APPEND linalg_sources
+    multiply_cc_impl.cc
 )
 
 set(linalg_sources "${linalg_sources}" PARENT_SCOPE)
@@ -81,3 +82,4 @@ foreach(qa_file ${test_linalg_sources})
         ${CMAKE_CURRENT_SOURCE_DIR}/${qa_file}
     )
 endforeach(qa_file)
+    ${CMAKE_CURRENT_SOURCE_DIR}/qa_multiply_cc.cc

@@ -8,5 +8,8 @@
 %include "linalg_swig_doc.i"
 
 %{
+#include "linalg/multiply_cc.h"
 %}
 
+%include "linalg/multiply_cc.h"
+GR_SWIG_BLOCK_MAGIC2(linalg, multiply_cc);
