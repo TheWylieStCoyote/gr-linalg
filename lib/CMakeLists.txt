@@ -85,4 +85,3 @@ foreach(qa_file ${test_linalg_sources})
         ${CMAKE_CURRENT_SOURCE_DIR}/${qa_file}
     )
 endforeach(qa_file)
-    ${CMAKE_CURRENT_SOURCE_DIR}/qa_multiply_cc.cc    ${CMAKE_CURRENT_SOURCE_DIR}/qa_multiply_cc.cc    ${CMAKE_CURRENT_SOURCE_DIR}/qa_stream_to_matrix_cc.cc    ${CMAKE_CURRENT_SOURCE_DIR}/qa_matrix_to_stream_cc.cc
