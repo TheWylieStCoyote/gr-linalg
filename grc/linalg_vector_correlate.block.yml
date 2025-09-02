@@ -1,0 +1,149 @@
+id: linalg_vector_correlate
+label: Vector Correlate
+category: '[Linear Algebra]/Vector Operations'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.vector_correlate_${interface}_${type.fcn}(${shape_a}, ${shape_b}, ${mode}, ${conjugate})
+
+parameters:
+- id: interface
+  label: Interface
+  dtype: enum
+  default: sync
+  options: [sync, pdu]
+  option_labels: [Synchronous, PDU Messages]
+  hide: part
+
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, c, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+
+- id: shape_a
+  label: Vector A Shape
+  dtype: int_vector
+  default: '[8]'
+
+- id: shape_b
+  label: Vector B Shape
+  dtype: int_vector
+  default: '[8]'
+
+- id: mode
+  label: Mode
+  dtype: enum
+  default: FULL
+  options: [FULL, VALID, SAME]
+  option_labels: [Full, Valid, Same]
+
+- id: conjugate
+  label: Conjugate First Vector
+  dtype: bool
+  default: 'False'
+
+inputs:
+- label: a
+  domain: ${ 'message' if interface == 'pdu' else 'stream' }
+  dtype: ${type.t}
+  vlen: ${shape_a[0]}
+
+- label: b
+  domain: ${ 'message' if interface == 'pdu' else 'stream' }
+  dtype: ${type.t}
+  vlen: ${shape_b[0]}
+
+outputs:
+- label: out
+  domain: ${ 'message' if interface == 'pdu' else 'stream' }
+  dtype: ${type.t}
+  vlen: ${ shape_a[0] + shape_b[0] - 1 if mode == 'FULL' else (max(shape_a[0], shape_b[0]) if mode == 'SAME' else abs(shape_a[0] - shape_b[0]) + 1) }
+
+asserts:
+- ${len(shape_a) == 1}
+- ${len(shape_b) == 1}
+- ${shape_a[0] > 0}
+- ${shape_b[0] > 0}
+
+documentation: |-
+  Computes the cross-correlation between two vectors a and b.
+  
+  Cross-correlation measures the similarity between two signals as a function
+  of the displacement of one relative to the other.
+  
+  **Mathematical operation:**
+  For vectors a[n] and b[n], the correlation c[k] is:
+  - **Without conjugation**: c[k] = Σ a[n] * b[n+k] 
+  - **With conjugation**: c[k] = Σ conj(a[n]) * b[n+k]
+  
+  **Output modes:**
+  - **FULL**: Full correlation (size = len(a) + len(b) - 1)
+    Returns correlation for all possible overlaps
+  - **SAME**: Same size as larger input (size = max(len(a), len(b)))
+    Returns central portion of full correlation
+  - **VALID**: Valid correlation only (size = |len(a) - len(b)| + 1)
+    Returns correlation where vectors completely overlap
+  
+  **Correlation vs Convolution:**
+  - **Cross-correlation**: c[k] = Σ a[n] * b[n+k]
+  - **Convolution**: c[k] = Σ a[n] * b[k-n]  
+  - **Relationship**: correlation(a,b) = convolution(a, reverse(b))
+  
+  Applications:
+  - **Signal detection**: Finding known patterns in noisy signals
+  - **Time delay estimation**: Measuring lag between similar signals  
+  - **Template matching**: Pattern recognition and image processing
+  - **Channel estimation**: Impulse response measurement
+  - **Radar/sonar processing**: Target detection and ranging
+  - **Audio processing**: Echo location and acoustic analysis
+  
+  **Auto-correlation (a = b):**
+  - Measures signal similarity with time-shifted versions of itself
+  - Peak at zero lag indicates signal energy
+  - Useful for periodicity detection and signal analysis
+  
+  **Complex correlation:**
+  - **Conjugate=False**: Standard complex correlation
+  - **Conjugate=True**: Conjugates first vector (common in signal processing)
+  - Important for complex-valued signals (radar, communications)
+  
+  **Interpretation of results:**
+  - **Peak locations**: Indicate best alignment/similarity
+  - **Peak magnitudes**: Measure correlation strength
+  - **Normalized correlation**: Divide by √(energy(a) * energy(b))
+  - **Zero-mean correlation**: Remove DC components before correlation
+  
+  **Performance characteristics:**
+  - **FULL mode**: Highest computational cost, most information
+  - **SAME mode**: Balanced cost and information content
+  - **VALID mode**: Lowest cost, limited to complete overlaps
+  - **Complexity**: O(N*M) for direct method, O(N log N) with FFT
+  
+  **Signal processing applications:**
+  - **Match filtering**: Optimal detection in white noise
+  - **Pulse compression**: Radar and communication systems
+  - **Synchronization**: Timing recovery and frame alignment
+  - **Beamforming**: Array signal processing and direction finding
+  
+  **Quality metrics:**
+  - **Correlation coefficient**: Normalized correlation (-1 to +1)
+  - **Signal-to-noise ratio**: Peak correlation vs noise floor
+  - **Detection threshold**: Statistical significance testing
+  
+  Parameters:
+  - **Vector shapes**: Length of input vectors [N] and [M]
+  - **Mode**: Output size and alignment specification
+  - **Conjugate**: Whether to conjugate first vector (complex signals)
+  - **Type**: Data precision and real/complex specification
+  
+  **Output interpretation:**
+  - **Positive lag**: Second signal delayed relative to first
+  - **Negative lag**: Second signal advanced relative to first
+  - **Zero lag**: Signals aligned (auto-correlation peak)
+
+file_format: 1

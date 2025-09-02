@@ -1,0 +1,61 @@
+id: linalg_matrix_hermitian
+label: Matrix Hermitian Transpose
+category: '[linalg]'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.matrix_hermitian_${interface}_${type.fcn}(${shape})
+
+parameters:
+- id: interface
+  label: Interface
+  dtype: enum
+  default: sync
+  options: [sync, pdu]
+  option_labels: [Synchronous, PDU Messages]
+  hide: part
+
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, cf, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+
+- id: shape
+  label: Matrix Shape
+  dtype: int_vector
+  default: '[2, 2]'
+
+inputs:
+- label: in
+  domain: ${ 'message' if interface == 'pdu' else 'stream' }
+  dtype: ${type.t}
+  vlen: ${shape[0] * shape[1]}
+
+outputs:
+- label: out
+  domain: ${ 'message' if interface == 'pdu' else 'stream' }
+  dtype: ${type.t}
+  vlen: ${shape[1] * shape[0]}
+
+asserts:
+- ${len(shape) == 2}
+
+documentation: |-
+  Compute the Hermitian transpose (conjugate transpose) of a matrix.
+  
+  For a matrix A, the Hermitian transpose A† (or A*) is defined as:
+  - For real matrices: A† = A^T (regular transpose)
+  - For complex matrices: A† = conj(A^T) (conjugate transpose)
+  
+  The output matrix dimensions are swapped: an input matrix of shape [m, n]
+  produces an output matrix of shape [n, m].
+  
+  This operation is particularly important in complex analysis, quantum mechanics,
+  and signal processing applications where Hermitian matrices have special properties.
+
+file_format: 1

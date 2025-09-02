@@ -1,0 +1,88 @@
+id: linalg_matrix_determinant
+label: Matrix Determinant
+category: '[Linear Algebra]'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.matrix_determinant_${interface}_${type.fcn}(${shape})
+
+parameters:
+- id: interface
+  label: Interface
+  dtype: enum
+  default: sync
+  options: [sync, pdu]
+  option_labels: [Synchronous, PDU Messages]
+
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, c, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+
+- id: shape
+  label: Matrix Shape
+  dtype: int_vector
+  default: [3, 3]
+
+inputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape[0] * shape[1] if len(shape) >= 2 else shape[0]) if interface == 'sync' else 1}
+
+outputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: 1
+
+asserts:
+- ${len(shape) == 2}
+- ${shape[0] > 0 and shape[1] > 0}
+- ${shape[0] == shape[1]}
+
+documentation: |-
+  Computes the determinant of square matrices.
+  
+  Mathematical operation: det(A) = scalar value representing matrix determinant
+  
+  The determinant is a scalar value that characterizes important properties
+  of a square matrix, including invertibility and volume scaling.
+  
+  This block supports:
+  - All numeric types (float, double, complex)
+  - Square matrices only (N×N)
+  - Scalar output representing the determinant value
+  
+  Use cases:
+  - Matrix invertibility testing (det ≠ 0 means invertible)
+  - Volume scaling calculations
+  - Linear equation system analysis
+  - Matrix conditioning assessment
+  - Eigenvalue product computation
+  
+  Parameters:
+  - Type: Data type of matrix elements
+  - Shape: Matrix dimensions [rows, cols] (must be square)
+  
+  **Mathematical Properties:**
+  - det(AB) = det(A) × det(B)
+  - det(A⁻¹) = 1/det(A)
+  - det(Aᵀ) = det(A)
+  - det(0) = 0 (zero matrix)
+  - det(I) = 1 (identity matrix)
+  
+  **Special Cases:**
+  - Singular matrix: det = 0 (not invertible)
+  - Identity matrix: det = 1
+  - Orthogonal matrix: |det| = 1
+  
+  **Performance Notes:**
+  - O(n³) complexity for n×n matrices
+  - Uses LU decomposition for efficiency
+  - Numerically stable implementation
+
+file_format: 1

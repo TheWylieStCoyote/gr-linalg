@@ -1,0 +1,100 @@
+id: linalg_decomp_qr
+label: QR Decomposition
+category: '[Linear Algebra]/Decompositions'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.decomp_qr_${interface}_${type.fcn}(${shape})
+
+parameters:
+- id: interface
+  label: Interface
+  dtype: enum
+  default: sync
+  options: [sync, pdu]
+  option_labels: [Synchronous, PDU Messages]
+
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, cf, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+
+- id: shape
+  label: Matrix Shape
+  dtype: int_vector
+  default: [3, 3]
+
+inputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape[0] * shape[1] if len(shape) >= 2 else shape[0]) if interface == 'sync' else 1}
+
+outputs:
+- label: Q
+  domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape[0] * shape[0] if len(shape) >= 2 else 1) if interface == 'sync' else 1}
+- label: R
+  domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape[0] * shape[1] if len(shape) >= 2 else 1) if interface == 'sync' else 1}
+
+asserts:
+- ${len(shape) == 2}
+- ${shape[0] > 0 and shape[1] > 0}
+- ${shape[0] >= shape[1]}
+
+documentation: |-
+  Computes the QR decomposition of matrices.
+
+  Mathematical operation: A = QR
+  where Q is orthogonal/unitary matrix, R is upper triangular matrix
+
+  QR decomposition factors any matrix into an orthogonal matrix Q and
+  an upper triangular matrix R. This decomposition is fundamental for
+  least squares problems and numerical stability.
+
+  This block supports:
+  - All numeric types (float, double, complex)
+  - Rectangular matrices with m ≥ n (tall matrices)
+  - Two outputs: Q (orthogonal) and R (upper triangular)
+
+  Use cases:
+  - Least squares problem solving
+  - Matrix rank determination
+  - Orthogonal basis construction
+  - Eigenvalue algorithms (QR iteration)
+  - Gram-Schmidt orthogonalization
+
+  Parameters:
+  - Type: Data type of matrix elements
+  - Shape: Matrix dimensions [rows, cols] (rows ≥ cols)
+
+  **Output Matrices:**
+  - Q: Orthogonal matrix [m × m] with Q^H × Q = I
+  - R: Upper triangular matrix [m × n] with zeros below diagonal
+
+  **Mathematical Properties:**
+  - Q^H × Q = I (orthogonality)
+  - R[i,j] = 0 for i > j (upper triangular)
+  - rank(A) = rank(R) = number of non-zero R diagonal elements
+  - ||A||₂ = ||R||₂ (norm preservation)
+
+  **Applications:**
+  - Least squares: x = R⁻¹(Q^H × b) for Ax ≈ b
+  - QR eigenvalue algorithm for symmetric matrices
+  - Gram-Schmidt process implementation
+  - Numerical rank determination
+
+  **Performance Notes:**
+  - O(mn²) complexity for m×n matrix
+  - Numerically stable using Householder reflections
+  - More stable than Gram-Schmidt for orthogonalization
+  - Efficient for overdetermined systems (m > n)
+
+file_format: 1

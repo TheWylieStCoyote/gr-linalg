@@ -1,0 +1,82 @@
+id: linalg_vector_to_matrix
+label: Vector to Matrix
+category: '[Linear Algebra]/Vector Operations'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.vector_to_matrix_${type.fcn}(${input_shape}, ${output_shape})
+
+parameters:
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, cf, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+
+- id: input_shape
+  label: Input Vector Shape
+  dtype: int_vector
+  default: [6]
+
+- id: output_shape
+  label: Output Matrix Shape
+  dtype: int_vector
+  default: [2, 3]
+
+inputs:
+- domain: stream
+  dtype: ${type.t}
+  vlen: ${int(input_shape[0] if len(input_shape) >= 1 else 1)}
+
+outputs:
+- domain: stream
+  dtype: ${type.t}
+  vlen: ${int(output_shape[0] * output_shape[1] if len(output_shape) >= 2 else output_shape[0])}
+
+asserts:
+- ${len(input_shape) == 1}
+- ${len(output_shape) == 2}
+- ${input_shape[0] > 0}
+- ${output_shape[0] > 0 and output_shape[1] > 0}
+- ${input_shape[0] == output_shape[0] * output_shape[1]}
+
+documentation: |-
+  Reshapes vector data into matrix format.
+
+  Mathematical operation: reshape vector → matrix
+
+  This block converts input vectors into matrices by arranging the vector
+  elements into the specified matrix shape. The total number of elements
+  must be preserved (input vector length = output matrix rows × cols).
+
+  This block supports:
+  - All numeric types (float, double, complex)
+  - Arbitrary matrix output shapes (rectangular matrices supported)
+  - Preserves total element count during reshape
+
+  Use cases:
+  - Converting 1D signal data to 2D matrix format
+  - Preparing data for matrix operations
+  - Signal processing applications requiring matrix structure
+  - Converting between vector and matrix representations
+
+  Parameters:
+  - Type: Data type of vector/matrix elements
+  - Input Shape: Vector dimensions [length]
+  - Output Shape: Matrix dimensions [rows, cols]
+
+  **Constraints:**
+  - Input vector length must equal output matrix rows × cols
+  - Input shape must be 1D vector
+  - Output shape must be 2D matrix
+
+  **Performance Notes:**
+  - O(1) operation - simple data reshaping
+  - Memory-efficient implementation
+  - No mathematical computation involved
+
+file_format: 1

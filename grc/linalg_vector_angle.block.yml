@@ -1,0 +1,93 @@
+id: linalg_vector_angle
+label: Vector Angle
+category: '[Linear Algebra]'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.vector_angle_${type.fcn}(${shape}, ${degrees})
+
+parameters:
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, cf, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+
+- id: shape
+  label: Vector Shape
+  dtype: int_vector
+  default: [3]
+
+- id: degrees
+  label: Output Units
+  dtype: bool
+  default: false
+  option_labels: [Radians, Degrees]
+
+inputs:
+- label: a
+  domain: stream
+  dtype: ${type.t}
+  vlen: ${int(shape[0] if len(shape) >= 1 else 1)}
+
+- label: b
+  domain: stream
+  dtype: ${type.t}
+  vlen: ${int(shape[0] if len(shape) >= 1 else 1)}
+
+outputs:
+- domain: stream
+  dtype: ${type.t}
+  vlen: 1
+
+asserts:
+- ${len(shape) == 1}
+- ${shape[0] > 0}
+
+documentation: |-
+  Computes the angle between two input vectors.
+
+  Mathematical operation: θ = arccos((a·b)/(|a||b|))
+
+  The angle between vectors is computed using the dot product formula:
+  cos(θ) = (a·b)/(|a||b|), where θ is the angle between vectors a and b.
+
+  This block supports:
+  - All numeric types (float, double, complex)
+  - Output in radians or degrees
+  - Any vector dimension (1D vectors)
+  - Robust handling of edge cases (zero vectors, parallel vectors)
+
+  Use cases:
+  - Signal correlation analysis
+  - Direction finding
+  - Pattern matching
+  - Geometric computations
+  - Phase relationship analysis
+  - Beamforming applications
+
+  Parameters:
+  - Type: Data type of vector elements
+  - Shape: Vector dimension [length]
+  - Output Units: Choose between radians (false) or degrees (true)
+
+  **Output Range:**
+  - Radians: [0, π] (0 to 3.14159...)
+  - Degrees: [0°, 180°]
+
+  **Special Cases:**
+  - Parallel vectors (same direction): angle = 0
+  - Opposite vectors: angle = π (or 180°)
+  - Orthogonal vectors: angle = π/2 (or 90°)
+  - Zero vectors: angle = 0 (by convention)
+
+  **Performance Notes:**
+  - O(n) complexity where n is vector length
+  - Includes normalization and dot product computation
+  - Optimized implementation using Eigen library
+
+file_format: 1

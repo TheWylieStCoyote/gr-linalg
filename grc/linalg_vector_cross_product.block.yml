@@ -1,0 +1,100 @@
+id: linalg_vector_cross_product
+label: Vector Cross Product
+
+category: '[Linalg]'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.vector_cross_product_${type.fcn}(${validate_3d})
+
+parameters:
+- id: interface
+  label: Interface
+  dtype: enum
+  default: sync
+  options: [sync, pdu]
+  option_labels: [Synchronous, PDU Messages]
+
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, c, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [sync_f, sync_d, sync_c, sync_cd]
+    t: [float, double, complex, complex]
+
+- id: validate_3d
+  label: Validate 3D Vectors
+  dtype: bool
+  default: true
+  hide: part
+
+inputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: 3
+  multiplicity: 2
+  label: Vector A
+
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: 3
+  multiplicity: 1
+  label: Vector B
+
+outputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: 3
+  label: A × B
+
+documentation: |-
+  Computes the cross product of two 3D vectors.
+
+  Mathematical operation: a × b = (a₁b₂-a₂b₁, a₂b₀-a₀b₂, a₀b₁-a₁b₀)
+
+  The cross product is a fundamental operation in 3D vector geometry that produces
+  a vector perpendicular to both input vectors.
+
+  **Mathematical Properties:**
+  - Anti-commutative: a × b = -(b × a)
+  - Orthogonal: (a × b) ⊥ a and (a × b) ⊥ b
+  - Magnitude: |a × b| = |a| × |b| × sin(θ), where θ is angle between vectors
+  - Parallel vectors: a × b = 0 if a ∥ b
+
+  **Input Requirements:**
+  - Exactly 2 input vectors
+  - Each vector must have exactly 3 elements (when validation enabled)
+  - Supports both column vectors (3×1) and row vectors (1×3)
+
+  **Output:**
+  - Single 3D vector representing the cross product
+  - Same format as input vectors (column or row)
+
+  This block supports:
+  - All numeric types including complex numbers
+  - Configurable 3D validation (can be disabled for special cases)
+  - High precision computation for double types
+  - Robust handling of edge cases (parallel vectors, zero vectors)
+
+  Use cases:
+  - 3D rotations and transformations
+  - Normal vector calculation for surfaces
+  - Angular momentum computation
+  - Electromagnetic field calculations
+  - 3D graphics and computer vision
+  - Robotic kinematics
+  - Signal processing in 3D space
+
+  Parameters:
+  - Type: Data type of vector elements
+  - Validate 3D: Enable/disable strict 3D vector validation
+
+  **Performance Notes:**
+  - O(1) complexity - constant time operation
+  - Optimized for 3D vectors specifically
+  - Complex number cross products fully supported
+
+file_format: 1

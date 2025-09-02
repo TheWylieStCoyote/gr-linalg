@@ -1,0 +1,83 @@
+id: linalg_vector_norm
+label: Vector Norm
+category: '[Linear Algebra]'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.vector_norm_${interface}_${type.fcn}(${order}, ${shape})
+
+parameters:
+- id: interface
+  label: Interface
+  dtype: enum
+  default: sync
+  options: [sync, pdu]
+  option_labels: [Synchronous, PDU Messages]
+
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, cf, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [sync_f, sync_d, sync_cf, sync_cd]
+    t: [float, double, complex, complex]
+
+- id: shape
+  label: Vector Shape
+  dtype: int_vector
+  default: [3]
+
+- id: order
+  label: Norm Order
+  dtype: enum
+  default: '2'
+  options: ['1', '2', 'inf']
+  option_labels: ['L1 (Manhattan)', 'L2 (Euclidean)', 'L∞ (Maximum)']
+
+inputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape[0] if len(shape) >= 1 else 1) if interface == 'sync' else 1}
+
+outputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: 1
+
+asserts:
+- ${len(shape) == 1}
+- ${shape[0] > 0}
+
+documentation: |-
+  Computes the norm of input vectors.
+
+  Mathematical operation: ||v||_p where p is the norm order
+
+  Supported norms:
+  - L1 (Manhattan): ||v||₁ = Σ|vᵢ|
+  - L2 (Euclidean): ||v||₂ = √(Σ|vᵢ|²)
+  - L∞ (Maximum): ||v||∞ = max|vᵢ|
+
+  This block supports:
+  - All numeric types (float, double, complex)
+  - Various norm types (L1, L2, L∞)
+  - Arbitrary vector dimensions
+
+  Use cases:
+  - Signal magnitude analysis
+  - Distance calculations
+  - Normalization preprocessing
+  - Feature extraction
+
+  Parameters:
+  - Type: Data type of vector elements
+  - Shape: Vector dimension [length]
+  - Order: Type of norm to compute
+
+  **Performance Notes:**
+  - O(n) complexity for all norm types
+  - Optimized implementations using Eigen library
+
+file_format: 1

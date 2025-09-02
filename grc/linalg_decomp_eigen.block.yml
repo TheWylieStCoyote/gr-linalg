@@ -1,0 +1,106 @@
+id: linalg_decomp_eigen
+label: Eigenvalue Decomposition
+category: '[Linear Algebra]/Decompositions'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.decomp_eigen_${interface}_${type.fcn}(${shape})
+
+parameters:
+- id: interface
+  label: Interface
+  dtype: enum
+  default: sync
+  options: [sync, pdu]
+  option_labels: [Synchronous, PDU Messages]
+
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, cf, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+
+- id: shape
+  label: Matrix Shape
+  dtype: int_vector
+  default: [3, 3]
+
+inputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape[0] * shape[1] if len(shape) >= 2 else shape[0]) if interface == 'sync' else 1}
+
+outputs:
+- label: eigenvalues
+  domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape[0] if len(shape) >= 2 else 1) if interface == 'sync' else 1}
+- label: eigenvectors
+  domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape[0] * shape[0] if len(shape) >= 2 else 1) if interface == 'sync' else 1}
+
+asserts:
+- ${len(shape) == 2}
+- ${shape[0] > 0 and shape[1] > 0}
+- ${shape[0] == shape[1]}
+
+documentation: |-
+  Computes the eigenvalue decomposition of square matrices.
+  
+  Mathematical operation: A × V = V × Λ
+  where V contains eigenvectors, Λ is diagonal matrix of eigenvalues
+  
+  Eigenvalue decomposition finds the eigenvalues and eigenvectors of a
+  square matrix. For diagonalizable matrices, this provides the fundamental
+  spectral representation revealing intrinsic matrix properties.
+  
+  This block supports:
+  - All numeric types (float, double, complex)
+  - Square matrices only (N×N)
+  - Two outputs: eigenvalues vector and eigenvectors matrix
+  
+  Use cases:
+  - Principal Component Analysis (PCA)
+  - Stability analysis of dynamic systems
+  - Vibration mode analysis
+  - Markov chain steady-state computation
+  - Quantum mechanics observables
+  
+  Parameters:
+  - Type: Data type of matrix elements
+  - Shape: Matrix dimensions [rows, cols] (must be square)
+  
+  **Output Data:**
+  - Eigenvalues: Vector of n eigenvalues λᵢ
+  - Eigenvectors: Matrix where column i is eigenvector for λᵢ
+  
+  **Mathematical Properties:**
+  - A × vᵢ = λᵢ × vᵢ (eigenvalue equation)
+  - det(A - λI) = 0 (characteristic equation)
+  - tr(A) = Σλᵢ (trace equals sum of eigenvalues)
+  - det(A) = ∏λᵢ (determinant equals product of eigenvalues)
+  
+  **Special Cases:**
+  - Symmetric real matrices: Real eigenvalues, orthogonal eigenvectors
+  - Hermitian matrices: Real eigenvalues, orthonormal eigenvectors
+  - Singular matrices: At least one zero eigenvalue
+  - Identity matrix: All eigenvalues = 1
+  
+  **Applications:**
+  - Diagonalization: A = V × Λ × V⁻¹
+  - Matrix powers: Aⁿ = V × Λⁿ × V⁻¹
+  - Matrix exponential: eᴬ = V × eᴸ × V⁻¹
+  - Stability: System stable if all Re(λᵢ) < 0
+  
+  **Performance Notes:**
+  - O(n³) complexity for n×n matrix
+  - May not converge for severely ill-conditioned matrices
+  - Uses QR algorithm for general matrices
+  - More efficient specialized algorithms for symmetric matrices
+
+file_format: 1

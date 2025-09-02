@@ -1,0 +1,96 @@
+id: linalg_matrix_trace
+label: Matrix Trace
+category: '[Linear Algebra]'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.matrix_trace_${interface}_${type.fcn}(${shape})
+
+parameters:
+- id: interface
+  label: Interface
+  dtype: enum
+  default: sync
+  options: [sync, pdu]
+  option_labels: [Synchronous, PDU Messages]
+
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, cf, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+
+- id: shape
+  label: Matrix Shape
+  dtype: int_vector
+  default: [3, 3]
+
+inputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape[0] * shape[1] if len(shape) >= 2 else shape[0]) if interface == 'sync' else 1}
+
+outputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: 1
+
+asserts:
+- ${len(shape) == 2}
+- ${shape[0] > 0 and shape[1] > 0}
+- ${shape[0] == shape[1]}
+
+documentation: |-
+  Computes the trace (sum of diagonal elements) of square matrices.
+
+  Mathematical operation: tr(A) = Σ a_ii (sum of diagonal elements)
+
+  The trace is a fundamental matrix invariant that represents the sum
+  of all diagonal elements. It has important applications in linear
+  algebra, eigenvalue analysis, and matrix theory.
+
+  This block supports:
+  - All numeric types (float, double, complex)
+  - Square matrices only (N×N)
+  - Scalar output representing the trace value
+
+  Use cases:
+  - Matrix invariant calculation
+  - Eigenvalue sum computation (tr(A) = sum of eigenvalues)
+  - Matrix similarity testing
+  - Linear system analysis
+  - Covariance matrix analysis
+
+  Parameters:
+  - Type: Data type of matrix elements
+  - Shape: Matrix dimensions [rows, cols] (must be square)
+
+  **Mathematical Properties:**
+  - tr(A + B) = tr(A) + tr(B) (linearity)
+  - tr(αA) = α·tr(A) (scalar multiplication)
+  - tr(AB) = tr(BA) (cyclic property)
+  - tr(A) = tr(Aᵀ) (transpose invariant)
+  - tr(A) = sum of eigenvalues
+
+  **Special Cases:**
+  - Identity matrix: tr(I) = n (matrix dimension)
+  - Zero matrix: tr(0) = 0
+  - Diagonal matrix: tr(D) = sum of diagonal elements
+  - Symmetric matrix: trace equals sum of eigenvalues
+
+  **Performance Notes:**
+  - O(n) complexity for n×n matrices (only diagonal access)
+  - Very efficient operation
+  - No memory allocation required
+
+  **Applications:**
+  - Characteristic polynomial coefficient
+  - Matrix norm calculations
+  - Optimization objective functions
+  - Signal processing metrics
+
+file_format: 1

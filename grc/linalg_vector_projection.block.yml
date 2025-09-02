@@ -1,0 +1,102 @@
+id: linalg_vector_projection
+label: Vector Projection
+category: '[Linear Algebra]/Vector Operations'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.vector_projection_${interface}_${type.fcn}(${shape_a}, ${shape_b})
+
+parameters:
+- id: interface
+  label: Interface
+  dtype: enum
+  default: sync
+  options: [sync, pdu]
+  option_labels: [Synchronous, PDU Messages]
+  hide: part
+
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, cf, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+
+- id: shape_a
+  label: Vector A Shape
+  dtype: int_vector
+  default: [3]
+
+- id: shape_b
+  label: Vector B Shape
+  dtype: int_vector
+  default: [3]
+
+inputs:
+- label: a
+  domain: ${ 'message' if interface == 'pdu' else 'stream' }
+  dtype: ${type.t}
+  vlen: ${int(shape_a[0] if len(shape_a) >= 1 else 1)}
+- label: b
+  domain: ${ 'message' if interface == 'pdu' else 'stream' }
+  dtype: ${type.t}
+  vlen: ${int(shape_b[0] if len(shape_b) >= 1 else 1)}
+
+outputs:
+- label: out
+  domain: ${ 'message' if interface == 'pdu' else 'stream' }
+  dtype: ${type.t}
+  vlen: ${int(shape_a[0] if len(shape_a) >= 1 else 1)}
+
+asserts:
+- ${len(shape_a) == 1}
+- ${len(shape_b) == 1}
+- ${shape_a[0] > 0 and shape_b[0] > 0}
+- ${shape_a[0] == shape_b[0]}
+
+documentation: |-
+  Computes the vector projection of vector A onto vector B.
+
+  Mathematical operation: proj_b(a) = (a·b / b·b) × b
+
+  The vector projection is the component of vector A that lies in the
+  direction of vector B. It represents the "shadow" that vector A casts
+  onto the line defined by vector B.
+
+  This block supports:
+  - All numeric types (float, double, complex)
+  - Vectors of any dimension (both inputs must have same dimension)
+  - Geometric interpretation as shadow/component projection
+
+  Use cases:
+  - Signal decomposition into directional components
+  - Geometric calculations and computer graphics
+  - Principal component analysis preprocessing
+  - Orthogonal decomposition of vectors
+  - Finding components parallel to given directions
+
+  Parameters:
+  - Type: Data type of vector elements
+  - Vector A Shape: Dimensions of vector to be projected [length]
+  - Vector B Shape: Dimensions of target vector [length] (must match A)
+
+  **Mathematical Properties:**
+  - proj_b(a) is parallel to b
+  - ||proj_b(a)|| ≤ ||a|| (projection magnitude ≤ original magnitude)
+  - proj_b(a) = 0 when a ⊥ b (orthogonal vectors)
+  - proj_b(a) = a when a ∥ b (parallel vectors)
+
+  **Special Cases:**
+  - Zero vector B: undefined (division by zero)
+  - Orthogonal vectors: projection = 0
+  - Parallel vectors: projection = original vector A
+
+  **Performance Notes:**
+  - O(n) complexity for n-dimensional vectors
+  - Numerically stable implementation
+  - Handles near-zero denominators gracefully
+
+file_format: 1

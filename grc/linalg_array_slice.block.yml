@@ -1,0 +1,153 @@
+id: linalg_array_slice
+label: Array Slice
+category: '[Linear Algebra]/Utilities'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.array_slice_${interface}_${type.fcn}(${input_shape}, ${start_indices}, ${end_indices})
+
+parameters:
+- id: interface
+  label: Interface
+  dtype: enum
+  default: sync
+  options: [sync, pdu]
+  option_labels: [Synchronous, PDU Messages]
+  hide: part
+
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, cf, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+
+- id: input_shape
+  label: Input Shape
+  dtype: int_vector
+  default: '[4, 4]'
+
+- id: start_indices
+  label: Start Indices
+  dtype: int_vector
+  default: '[1, 1]'
+
+- id: end_indices
+  label: End Indices
+  dtype: int_vector
+  default: '[3, 3]'
+
+inputs:
+- label: in
+  domain: ${ 'message' if interface == 'pdu' else 'stream' }
+  dtype: ${type.t}
+  vlen: ${input_shape[0] * input_shape[1] if len(input_shape) == 2 else input_shape[0]}
+
+outputs:
+- label: out
+  domain: ${ 'message' if interface == 'pdu' else 'stream' }
+  dtype: ${type.t}
+  vlen: ${(end_indices[0] - start_indices[0]) * (end_indices[1] - start_indices[1]) if len(input_shape) == 2 else (end_indices[0] - start_indices[0])}
+
+asserts:
+- ${len(input_shape) >= 1 and len(input_shape) <= 2}
+- ${len(start_indices) == len(input_shape)}
+- ${len(end_indices) == len(input_shape)}
+- ${all(s >= 0 for s in start_indices)}
+- ${all(e > s for s, e in zip(start_indices, end_indices))}
+- ${all(e <= dim for e, dim in zip(end_indices, input_shape))}
+
+documentation: |-
+  Extracts a contiguous slice/subarray from input matrices or vectors.
+  
+  Array slicing allows extraction of rectangular regions from matrices or 
+  segments from vectors, similar to NumPy array indexing.
+  
+  **Mathematical operation:**
+  For input array A with shape [m, n], extract subarray A[i₁:i₂, j₁:j₂]
+  where (i₁,j₁) are start indices and (i₂,j₂) are end indices.
+  
+  **Indexing conventions:**
+  - **Zero-based indexing**: First element is at index 0
+  - **Inclusive start**: Start index is included in slice
+  - **Exclusive end**: End index is not included (Python convention)
+  - **Column-major order**: Data stored/accessed in column-major format
+  
+  **Supported operations:**
+  
+  **Matrix slicing (2D):**
+  - Extract submatrices: A[i₁:i₂, j₁:j₂]
+  - Row extraction: A[i₁:i₂, :] (full column range)
+  - Column extraction: A[:, j₁:j₂] (full row range)
+  - Diagonal extraction: A[i:i+k, j:j+k] (square submatrix)
+  
+  **Vector slicing (1D):**
+  - Extract segments: v[i₁:i₂]
+  - Head extraction: v[:k] (first k elements)
+  - Tail extraction: v[k:] (from k to end)
+  - Window extraction: v[i:i+w] (sliding window)
+  
+  **Applications:**
+  - **Signal windowing**: Extract time/frequency segments
+  - **Region of interest**: Focus on specific matrix regions
+  - **Data preprocessing**: Remove padding or boundary effects
+  - **Block processing**: Divide large matrices into smaller blocks
+  - **Feature extraction**: Extract relevant data portions
+  - **Memory optimization**: Process only required data portions
+  
+  **Performance characteristics:**
+  - **Zero-copy operation**: When possible, avoids data copying
+  - **Contiguous output**: Ensures efficient memory layout
+  - **Streaming compatible**: Works with continuous data streams
+  - **Low overhead**: Minimal computational cost
+  
+  **Example configurations:**
+  
+  **Extract center 2×2 from 4×4 matrix:**
+  - Input shape: [4, 4]
+  - Start indices: [1, 1]  
+  - End indices: [3, 3]
+  - Output: 2×2 center submatrix
+  
+  **Extract first half of vector:**
+  - Input shape: [8]
+  - Start indices: [0]
+  - End indices: [4]
+  - Output: First 4 elements
+  
+  **Extract matrix rows 2-4:**
+  - Input shape: [6, 3]
+  - Start indices: [2, 0]
+  - End indices: [5, 3]
+  - Output: 3×3 matrix (rows 2,3,4)
+  
+  **Boundary conditions:**
+  - **Valid indices**: All indices must be within array bounds
+  - **Non-empty slices**: End indices must be greater than start indices
+  - **Dimension consistency**: Index vectors must match input dimensions
+  
+  **Memory layout considerations:**
+  - **Column-major input**: Data arranged in column-major order
+  - **Contiguous slices**: Output maintains contiguous memory layout
+  - **Stride handling**: Handles non-unit strides efficiently
+  
+  **Error handling:**
+  - **Index validation**: Checks all indices are within bounds
+  - **Shape consistency**: Verifies index dimensions match input
+  - **Non-empty validation**: Ensures resulting slice is non-empty
+  
+  **Comparison with other operations:**
+  - **Array slice vs reshape**: Slice extracts data, reshape reorganizes
+  - **Array slice vs transpose**: Slice selects elements, transpose reorders
+  - **Array slice vs matrix multiply**: Slice is selection, multiply is computation
+  
+  Parameters:
+  - **Input shape**: Dimensions of input array [rows, cols] or [length]
+  - **Start indices**: Starting position for each dimension [start_row, start_col]
+  - **End indices**: Ending position for each dimension [end_row, end_col]
+  - **Type**: Data precision and real/complex specification
+
+file_format: 1

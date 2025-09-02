@@ -1,0 +1,100 @@
+id: linalg_decomp_cholesky
+label: Cholesky Decomposition
+category: '[Linear Algebra]/Decompositions'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.decomp_cholesky_${interface}_${type.fcn}(${shape})
+
+parameters:
+- id: interface
+  label: Interface
+  dtype: enum
+  default: sync
+  options: [sync, pdu]
+  option_labels: [Synchronous, PDU Messages]
+
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, cf, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+
+- id: shape
+  label: Matrix Shape
+  dtype: int_vector
+  default: [3, 3]
+
+inputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape[0] * shape[1] if len(shape) >= 2 else shape[0]) if interface == 'sync' else 1}
+
+outputs:
+- label: L
+  domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape[0] * shape[0] if len(shape) >= 2 else 1) if interface == 'sync' else 1}
+
+asserts:
+- ${len(shape) == 2}
+- ${shape[0] > 0 and shape[1] > 0}
+- ${shape[0] == shape[1]}
+
+documentation: |-
+  Computes the Cholesky decomposition of positive definite matrices.
+
+  Mathematical operation: A = L × L^H
+  where L is lower triangular matrix, L^H is conjugate transpose
+
+  Cholesky decomposition factors positive definite matrices into the
+  product of a lower triangular matrix and its conjugate transpose.
+  This is the most efficient decomposition for positive definite systems.
+
+  This block supports:
+  - All numeric types (float, double, complex)
+  - Square positive definite matrices only
+  - Single output: L (lower triangular factor)
+
+  Use cases:
+  - Solving positive definite linear systems
+  - Multivariate normal distribution sampling
+  - Covariance matrix decomposition
+  - Optimization with quadratic forms
+  - Signal processing with autocorrelation matrices
+
+  Parameters:
+  - Type: Data type of matrix elements
+  - Shape: Matrix dimensions [rows, cols] (must be square and positive definite)
+
+  **Output Matrix:**
+  - L: Lower triangular matrix with L × L^H = A
+
+  **Mathematical Properties:**
+  - L[i,j] = 0 for i < j (lower triangular)
+  - L[i,i] > 0 (positive diagonal elements)
+  - A = L × L^H (reconstruction property)
+  - det(A) = (∏L[i,i])² (determinant via diagonal)
+
+  **Requirements:**
+  - Input matrix must be positive definite
+  - All eigenvalues must be positive
+  - Matrix must be Hermitian (A = A^H)
+
+  **Applications:**
+  - Solve Ax = b: first solve Ly = b, then L^H x = y
+  - Generate correlated random variables: L × z (z ~ N(0,I))
+  - Matrix square root computation
+  - Quadratic form optimization
+
+  **Performance Notes:**
+  - O(n³/3) complexity (fastest matrix decomposition)
+  - Fails if matrix is not positive definite
+  - Half the operations compared to LU decomposition
+  - Numerically stable for well-conditioned matrices
+
+file_format: 1

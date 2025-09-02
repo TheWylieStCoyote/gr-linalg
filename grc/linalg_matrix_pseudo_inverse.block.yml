@@ -1,0 +1,68 @@
+id: linalg_matrix_pseudo_inverse
+label: Matrix Pseudo-Inverse
+category: '[linalg]'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.matrix_pseudo_inverse_${interface}_${type.fcn}(${shape})
+
+parameters:
+- id: interface
+  label: Interface
+  dtype: enum
+  default: sync
+  options: [sync, pdu]
+  option_labels: [Synchronous, PDU Messages]
+  hide: part
+
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, cf, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+
+- id: shape
+  label: Matrix Shape
+  dtype: int_vector
+  default: '[3, 2]'
+
+inputs:
+- label: in
+  domain: ${ 'message' if interface == 'pdu' else 'stream' }
+  dtype: ${type.t}
+  vlen: ${shape[0] * shape[1]}
+
+outputs:
+- label: out
+  domain: ${ 'message' if interface == 'pdu' else 'stream' }
+  dtype: ${type.t}
+  vlen: ${shape[1] * shape[0]}
+
+asserts:
+- ${len(shape) == 2}
+
+documentation: |-
+  Compute the Moore-Penrose pseudo-inverse (A†) of a matrix.
+  
+  The pseudo-inverse provides the best approximate solution to the linear equation Ax = b
+  in the least-squares sense. For an m × n input matrix A, the pseudo-inverse A† is an 
+  n × m matrix with the following properties:
+  
+  - If A is invertible: A† = A⁻¹ (exact inverse)
+  - If A has full row rank: A† = Aᵀ(AAᵀ)⁻¹ 
+  - If A has full column rank: A† = (AᵀA)⁻¹Aᵀ
+  - General case: Uses Singular Value Decomposition (SVD)
+  
+  This block is particularly useful for:
+  - Solving overdetermined systems (more equations than unknowns)
+  - Solving underdetermined systems (more unknowns than equations)
+  - Finding least-squares solutions to inconsistent systems
+  - Signal processing applications requiring robust matrix inversion
+  
+  The implementation uses SVD with appropriate tolerance for numerical stability.
+
+file_format: 1

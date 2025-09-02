@@ -1,0 +1,96 @@
+id: linalg_matrix_rank
+label: Matrix Rank
+category: '[Linear Algebra]'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.matrix_rank_${interface}_${type.fcn}(${shape})
+
+parameters:
+- id: interface
+  label: Interface
+  dtype: enum
+  default: sync
+  options: [sync, pdu]
+  option_labels: [Synchronous, PDU Messages]
+
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, cf, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+
+- id: shape
+  label: Matrix Shape
+  dtype: int_vector
+  default: [3, 3]
+
+inputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape[0] * shape[1] if len(shape) >= 2 else shape[0]) if interface == 'sync' else 1}
+
+outputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: int
+  vlen: 1
+
+asserts:
+- ${len(shape) == 2}
+- ${shape[0] > 0 and shape[1] > 0}
+
+documentation: |-
+  Computes the rank of matrices (number of linearly independent rows/columns).
+
+  Mathematical operation: rank(A) = number of linearly independent rows/columns
+
+  The rank is a fundamental property that measures the dimension of the
+  vector space spanned by the matrix rows (or columns). It determines
+  invertibility, solution existence, and system properties.
+
+  This block supports:
+  - All numeric types (float, double, complex)
+  - Rectangular matrices (M×N)
+  - Integer output representing the rank value
+
+  Use cases:
+  - Linear system solvability analysis
+  - Matrix invertibility testing (rank = n for n×n matrix)
+  - Dimensionality reduction validation
+  - Signal subspace analysis
+  - Control system observability/controllability
+
+  Parameters:
+  - Type: Data type of matrix elements
+  - Shape: Matrix dimensions [rows, cols]
+
+  **Mathematical Properties:**
+  - 0 ≤ rank(A) ≤ min(m,n) for m×n matrix
+  - rank(A) = rank(Aᵀ) (transpose invariant)
+  - rank(AB) ≤ min(rank(A), rank(B))
+  - rank(A + B) ≤ rank(A) + rank(B)
+  - rank(A) = number of non-zero singular values
+
+  **Special Cases:**
+  - Full rank: rank(A) = min(rows, cols)
+  - Rank deficient: rank(A) < min(rows, cols)
+  - Zero matrix: rank(0) = 0
+  - Identity matrix: rank(I) = n
+  - Singular matrix: rank(A) < n for n×n matrix
+
+  **Numerical Considerations:**
+  - Uses SVD for robust rank computation
+  - Tolerance-based determination (machine epsilon)
+  - Handles numerical precision issues
+  - Stable against small perturbations
+
+  **Performance Notes:**
+  - O(min(m,n)×max(m,n)²) complexity via SVD
+  - Memory efficient implementation
+  - Numerically stable algorithm
+
+file_format: 1

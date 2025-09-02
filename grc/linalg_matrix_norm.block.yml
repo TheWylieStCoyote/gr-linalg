@@ -1,0 +1,101 @@
+id: linalg_matrix_norm
+label: Matrix Norm
+category: '[Linear Algebra]'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.matrix_norm_${interface}_${type.fcn}(${shape}, linalg.norm_type.${norm})
+
+parameters:
+- id: interface
+  label: Interface
+  dtype: enum
+  default: sync
+  options: [sync, pdu]
+  option_labels: [Synchronous, PDU Messages]
+
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, cf, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+
+- id: shape
+  label: Matrix Shape
+  dtype: int_vector
+  default: [3, 3]
+
+- id: norm
+  label: Norm Type
+  dtype: enum
+  default: Frobenius
+  options: [Frobenius, L1, L2, Max]
+  option_labels: [Frobenius Norm, L1 Norm, L2 Norm (Spectral), Max Norm]
+
+inputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape[0] * shape[1] if len(shape) >= 2 else shape[0]) if interface == 'sync' else 1}
+
+outputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: 1
+
+asserts:
+- ${len(shape) == 2}
+- ${shape[0] > 0 and shape[1] > 0}
+
+documentation: |-
+  Computes various norms of matrices.
+
+  Mathematical operations:
+  - Frobenius norm: ||A||_F = √(Σ|a_ij|²)
+  - L1 norm: ||A||_1 = max_j(Σ_i|a_ij|) (max column sum)
+  - L2 norm: ||A||_2 = σ_max (largest singular value)
+  - Max norm: ||A||_∞ = max_i(Σ_j|a_ij|) (max row sum)
+
+  Matrix norms provide measures of matrix magnitude and are essential
+  for numerical analysis, condition number computation, and convergence
+  analysis. Different norms capture different aspects of matrix behavior.
+
+  This block supports:
+  - All numeric types (float, double, complex)
+  - Rectangular matrices (M×N)
+  - Multiple norm types for different applications
+
+  Use cases:
+  - Matrix conditioning analysis
+  - Numerical algorithm convergence testing
+  - Error bound calculations
+  - Optimization objective functions
+  - Signal processing magnitude analysis
+
+  Parameters:
+  - Type: Data type of matrix elements
+  - Shape: Matrix dimensions [rows, cols]
+  - Norm Type: Type of norm computation
+
+  **Norm Properties:**
+  - Frobenius: Generalization of Euclidean norm for matrices
+  - L1: Induced norm, maximum absolute column sum
+  - L2: Spectral norm, largest singular value
+  - Max: Induced norm, maximum absolute row sum
+
+  **Mathematical Properties:**
+  - ||A|| ≥ 0, ||A|| = 0 iff A = 0
+  - ||αA|| = |α|·||A|| (homogeneity)
+  - ||A + B|| ≤ ||A|| + ||B|| (triangle inequality)
+  - ||AB|| ≤ ||A||·||B|| (submultiplicativity for induced norms)
+
+  **Performance Notes:**
+  - Frobenius: O(mn) - sum of squared elements
+  - L1/Max: O(mn) - simple summations
+  - L2: O(min(m,n)²max(m,n)) - requires SVD
+  - L2 is most expensive but most meaningful for stability
+
+file_format: 1

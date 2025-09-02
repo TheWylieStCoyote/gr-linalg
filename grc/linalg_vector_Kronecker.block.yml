@@ -1,0 +1,88 @@
+id: linalg_vector_Kronecker
+label: Vector Kronecker Product
+category: '[linalg]'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.vector_kronecker_${interface}_${type.fcn}(${shape_a}, ${shape_b})
+
+parameters:
+- id: interface
+  label: Interface
+  dtype: enum
+  default: sync
+  options: [sync, pdu]
+  option_labels: [Synchronous, PDU Messages]
+  hide: part
+
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, cf, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+
+- id: shape_a
+  label: Matrix A Shape
+  dtype: int_vector
+  default: '[2, 2]'
+
+- id: shape_b
+  label: Matrix B Shape
+  dtype: int_vector
+  default: '[2, 2]'
+
+inputs:
+- label: a
+  domain: ${ 'message' if interface == 'pdu' else 'stream' }
+  dtype: ${type.t}
+  vlen: ${shape_a[0] * shape_a[1]}
+
+- label: b
+  domain: ${ 'message' if interface == 'pdu' else 'stream' }
+  dtype: ${type.t}
+  vlen: ${shape_b[0] * shape_b[1]}
+
+outputs:
+- label: out
+  domain: ${ 'message' if interface == 'pdu' else 'stream' }
+  dtype: ${type.t}
+  vlen: ${(shape_a[0] * shape_b[0]) * (shape_a[1] * shape_b[1])}
+
+asserts:
+- ${len(shape_a) == 2}
+- ${len(shape_b) == 2}
+- ${shape_a[0] > 0 and shape_a[1] > 0}
+- ${shape_b[0] > 0 and shape_b[1] > 0}
+
+documentation: |-
+  Compute the Kronecker product (tensor product) of two matrices A ⊗ B.
+  
+  For matrices A (m × n) and B (p × q), the Kronecker product A ⊗ B is an 
+  (mp × nq) matrix defined as:
+  
+  A ⊗ B = [a₁₁B  a₁₂B  ...  a₁ₙB]
+          [a₂₁B  a₂₂B  ...  a₂ₙB]
+          [ ⋮     ⋮     ⋱    ⋮  ]
+          [aₘ₁B  aₘ₂B  ...  aₘₙB]
+  
+  Each element aᵢⱼ of matrix A is multiplied by the entire matrix B.
+  
+  Properties:
+  - (A ⊗ B)ᵀ = Aᵀ ⊗ Bᵀ (transpose property)
+  - (A ⊗ B)(C ⊗ D) = (AC) ⊗ (BD) (when dimensions are compatible)
+  - tr(A ⊗ B) = tr(A) · tr(B) (trace property)
+  
+  Applications:
+  - Quantum mechanics (composite systems)
+  - Signal processing (multi-dimensional filters) 
+  - Linear algebra (vectorization of matrix operations)
+  - Control theory (multi-input multi-output systems)
+  
+  Note: This block is an alias for matrix_kronecker_product and provides
+  identical functionality with vector-oriented naming for compatibility.
+
+file_format: 1

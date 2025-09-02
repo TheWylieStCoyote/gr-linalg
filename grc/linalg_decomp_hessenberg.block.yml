@@ -1,0 +1,115 @@
+id: linalg_decomp_hessenberg
+label: Hessenberg Decomposition
+category: '[Linear Algebra]/Decompositions'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.decomp_hessenberg_${interface}_${type.fcn}(${shape}, ${compute_q})
+
+parameters:
+- id: interface
+  label: Interface
+  dtype: enum
+  default: sync
+  options: [sync, pdu]
+  option_labels: [Synchronous, PDU Messages]
+  hide: part
+
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, cf, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+
+- id: shape
+  label: Matrix Shape
+  dtype: int_vector
+  default: '[3, 3]'
+
+- id: compute_q
+  label: Compute Q Matrix
+  dtype: bool
+  default: 'True'
+
+inputs:
+- label: in
+  domain: ${ 'message' if interface == 'pdu' else 'stream' }
+  dtype: ${type.t}
+  vlen: ${shape[0] * shape[1]}
+
+outputs:
+- label: q
+  domain: ${ 'message' if interface == 'pdu' else 'stream' }
+  dtype: ${type.t}
+  vlen: ${shape[0] * shape[1]}
+
+- label: h
+  domain: ${ 'message' if interface == 'pdu' else 'stream' }
+  dtype: ${type.t}
+  vlen: ${shape[0] * shape[1]}
+
+asserts:
+- ${len(shape) == 2}
+- ${shape[0] > 0 and shape[1] > 0}
+- ${shape[0] == shape[1]}
+
+documentation: |-
+  Computes the Hessenberg decomposition of a square matrix A = Q*H*Qᵀ.
+  
+  The Hessenberg form H is an almost triangular matrix where:
+  - Upper Hessenberg: H[i,j] = 0 for i > j+1 (zeros below first subdiagonal)
+  - Lower Hessenberg: H[i,j] = 0 for i+1 < j (zeros above first superdiagonal)
+  
+  Mathematical decomposition:
+    A = Q * H * Qᵀ
+    where Q is orthogonal/unitary and H is in Hessenberg form
+  
+  **Real matrices:** Upper Hessenberg form
+  **Complex matrices:** Upper Hessenberg form with potentially complex entries
+  
+  Applications:
+  - **Eigenvalue computation**: Prerequisite for QR algorithm
+  - **Matrix functions**: Efficient computation of matrix functions
+  - **Numerical analysis**: Reduces complexity of many matrix operations
+  - **Control theory**: Analysis of linear systems
+  - **Iterative methods**: Improved convergence properties
+  
+  Algorithm properties:
+  - **Stability**: Numerically stable orthogonal transformations
+  - **Complexity**: O(n³) operations for n×n matrices
+  - **Memory**: Efficient in-place computation possible
+  - **Preservation**: Preserves eigenvalues of original matrix
+  
+  **Output matrices:**
+  - **Q matrix**: Orthogonal/unitary transformation matrix (n×n)
+  - **H matrix**: Upper Hessenberg matrix (n×n)
+  
+  **Verification:** A = Q*H*Qᵀ (within numerical precision)
+  
+  **Special cases:**
+  - Symmetric/Hermitian matrices: H is tridiagonal
+  - Already in Hessenberg form: Q = I (identity), H = A
+  - Diagonal matrices: H = A, Q = I
+  
+  **Numerical considerations:**
+  - Uses Householder reflections for stability
+  - Preserves matrix norms and conditioning
+  - Suitable for further eigenvalue computations
+  - Works well with both real and complex matrices
+  
+  **Performance notes:**
+  - Essential preprocessing step for eigenvalue algorithms
+  - Much faster than full eigendecomposition
+  - Reduces subsequent QR iterations significantly
+  - Memory-efficient implementation using BLAS/LAPACK
+  
+  Parameters:
+  - **Shape**: Matrix dimensions [rows, cols] (must be square)
+  - **Compute Q**: Whether to compute orthogonal matrix Q (default: True)
+  - **Type**: Data precision and complex/real specification
+
+file_format: 1

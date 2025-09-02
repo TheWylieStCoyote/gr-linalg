@@ -1,0 +1,104 @@
+id: linalg_decomp_svd
+label: SVD Decomposition
+category: '[Linear Algebra]/Decompositions'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.decomp_svd_${interface}_${type.fcn}(${shape})
+
+parameters:
+- id: interface
+  label: Interface
+  dtype: enum
+  default: sync
+  options: [sync, pdu]
+  option_labels: [Synchronous, PDU Messages]
+
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, cf, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+
+- id: shape
+  label: Matrix Shape
+  dtype: int_vector
+  default: [3, 3]
+
+inputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape[0] * shape[1] if len(shape) >= 2 else shape[0]) if interface == 'sync' else 1}
+
+outputs:
+- label: U
+  domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape[0] * shape[0] if len(shape) >= 2 else 1) if interface == 'sync' else 1}
+- label: S
+  domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(min(shape[0], shape[1]) if len(shape) >= 2 else 1) if interface == 'sync' else 1}
+- label: V
+  domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape[1] * shape[1] if len(shape) >= 2 else 1) if interface == 'sync' else 1}
+
+asserts:
+- ${len(shape) == 2}
+- ${shape[0] > 0 and shape[1] > 0}
+
+documentation: |-
+  Computes the Singular Value Decomposition (SVD) of matrices.
+
+  Mathematical operation: A = U × Σ × V^H
+  where U and V are orthogonal/unitary matrices, Σ is diagonal with singular values
+
+  SVD is one of the most important matrix decompositions, providing optimal
+  low-rank approximations and revealing the fundamental structure of matrices.
+  Every matrix has an SVD decomposition.
+
+  This block supports:
+  - All numeric types (float, double, complex)
+  - Rectangular matrices (M×N)
+  - Three separate outputs: U, singular values, V
+
+  Use cases:
+  - Principal Component Analysis (PCA)
+  - Low-rank matrix approximation
+  - Noise reduction and denoising
+  - Image compression and processing
+  - Least squares solutions (pseudoinverse)
+  - Signal subspace analysis
+
+  Parameters:
+  - Type: Data type of matrix elements
+  - Shape: Matrix dimensions [rows, cols]
+
+  **Output Dimensions:**
+  - U matrix: [m × m] (left singular vectors)
+  - S vector: [min(m,n)] (singular values, sorted descending)
+  - V matrix: [n × n] (right singular vectors)
+
+  **Mathematical Properties:**
+  - σ₁ ≥ σ₂ ≥ ... ≥ σᵣ ≥ 0 (ordered singular values)
+  - U^H × U = I, V^H × V = I (orthogonality)
+  - rank(A) = number of non-zero singular values
+  - ||A||₂ = σ₁ (largest singular value)
+
+  **Applications:**
+  - Pseudoinverse: A⁺ = V × Σ⁺ × U^H
+  - Low-rank approximation: A ≈ Σᵢ₌₁ᵏ σᵢ uᵢ vᵢ^H
+  - Condition number: cond(A) = σ₁/σₙ
+  - Matrix norm computation
+
+  **Performance Notes:**
+  - O(min(m,n) × max(m,n)²) complexity
+  - Numerically stable algorithm (LAPACK DGESVD)
+  - Most expensive but most reliable decomposition
+
+file_format: 1

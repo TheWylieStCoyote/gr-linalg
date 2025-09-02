@@ -1,0 +1,97 @@
+id: linalg_matrix_exp
+label: Matrix Exponential
+category: '[Linear Algebra]'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.matrix_exp_${interface}_${type.fcn}(${shape})
+
+parameters:
+- id: interface
+  label: Interface
+  dtype: enum
+  default: sync
+  options: [sync, pdu]
+  option_labels: [Synchronous, PDU Messages]
+
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, c, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+
+- id: shape
+  label: Matrix Shape
+  dtype: int_vector
+  default: [3, 3]
+
+inputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape[0] * shape[1] if len(shape) >= 2 else shape[0]) if interface == 'sync' else 1}
+
+outputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape[0] * shape[1] if len(shape) >= 2 else shape[0]) if interface == 'sync' else 1}
+
+asserts:
+- ${len(shape) == 2}
+- ${shape[0] > 0 and shape[1] > 0}
+- ${shape[0] == shape[1]}
+
+documentation: |-
+  Computes the matrix exponential exp(A) of square matrices.
+  
+  Mathematical operation: exp(A) = I + A + A²/2! + A³/3! + A⁴/4! + ...
+  
+  The matrix exponential is computed using the Padé approximation with scaling
+  and squaring for optimal numerical stability and performance.
+  
+  This block supports:
+  - All numeric types (float, double, complex)
+  - Square matrices only (N×N)
+  - Output has same shape as input (exp(A) is N×N if A is N×N)
+  - Numerically stable algorithm for all matrix sizes
+  
+  Use cases:
+  - Solving linear differential equations: dx/dt = Ax
+  - Lie group theory and matrix groups  
+  - Quantum mechanics (time evolution operators)
+  - Control theory and state-space models
+  - Markov chain transition matrices
+  - Signal processing transforms
+  
+  Parameters:
+  - Type: Data type of matrix elements
+  - Shape: Matrix dimensions [rows, cols] (must be square)
+  
+  **Mathematical Properties:**
+  - exp(0) = I (identity matrix)
+  - det(exp(A)) = exp(tr(A)) where tr(A) is trace
+  - exp(A) is always invertible for finite A
+  - d/dt exp(tA) = A × exp(tA) = exp(tA) × A
+  - exp(A + B) = exp(A) × exp(B) only if AB = BA
+  
+  **Special Cases:**
+  - Zero matrix: exp(0) = I (identity)
+  - Diagonal matrix: exp(diag(d)) = diag(exp(d))
+  - Skew-symmetric matrix: exp(A) is orthogonal
+  - Hermitian matrix: exp(A) is positive definite
+  
+  **Algorithm Details:**
+  - Uses Eigen's MatrixFunctions module
+  - Padé approximation with optimal scaling
+  - O(n³) complexity for n×n matrices
+  - Numerically stable for conditioning
+  
+  **Performance Notes:**
+  - Well-conditioned for most practical matrices
+  - Handles both real and complex matrices
+  - Efficient implementation using optimized BLAS
+
+file_format: 1

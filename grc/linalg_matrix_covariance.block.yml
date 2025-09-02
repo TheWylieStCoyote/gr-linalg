@@ -1,0 +1,105 @@
+id: linalg_matrix_covariance
+label: Matrix Covariance
+category: '[Linear Algebra]'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.matrix_covariance_${interface}_${type.fcn}(${shape}, ${unbiased}, ${center})
+
+parameters:
+- id: interface
+  label: Interface
+  dtype: enum
+  default: sync
+  options: [sync, pdu]
+  option_labels: [Synchronous, PDU Messages]
+
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, cf, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [f, d, cf, cd]
+    t: [float, double, complex, complex]
+
+- id: shape
+  label: Data Matrix Shape
+  dtype: int_vector
+  default: [100, 3]
+
+- id: unbiased
+  label: Unbiased Estimator
+  dtype: bool
+  default: true
+
+- id: center
+  label: Center Data
+  dtype: bool
+  default: true
+
+inputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape[0] * shape[1] if len(shape) >= 2 else shape[0]) if interface == 'sync' else 1}
+
+outputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape[1] * shape[1]) if interface == 'sync' else 1}
+
+asserts:
+- ${len(shape) == 2}
+- ${shape[0] > 1}
+- ${shape[1] > 0}
+
+documentation: |-
+  Computes the covariance matrix of input data.
+
+  Mathematical operation: Cov(X) = E[(X - μ)(X - μ)ᵀ]
+
+  This block computes the sample covariance matrix of the input data matrix,
+  where each column represents a variable and each row represents an observation.
+
+  The covariance matrix is a square symmetric matrix where:
+  - Diagonal elements are variances of each variable
+  - Off-diagonal elements are covariances between variable pairs
+
+  Statistical Options:
+  - Unbiased: Uses N-1 denominator (sample covariance) vs N (population covariance)
+  - Center: Subtracts column means before computing covariance
+
+  This block supports:
+  - All numeric types (float, double, complex)
+  - Both biased and unbiased estimation
+  - Optional data centering
+  - Synchronous and PDU message interfaces
+
+  Use cases:
+  - Principal Component Analysis (PCA) preprocessing
+  - Signal correlation analysis
+  - Multivariate statistical analysis
+  - Feature covariance in machine learning
+  - Portfolio risk analysis
+  - Array processing applications
+
+  Parameters:
+  - Type: Data type of matrix elements
+  - Data Matrix Shape: Input dimensions [observations, variables]
+  - Unbiased Estimator: Use N-1 denominator (true) vs N denominator (false)
+  - Center Data: Subtract column means before covariance computation
+
+  **Output:**
+  - Covariance matrix of size [variables × variables]
+
+  **Requirements:**
+  - At least 2 observations (rows > 1) for meaningful covariance
+  - Input matrix must be 2D [observations, variables]
+
+  **Performance Notes:**
+  - O(n×m²) complexity where n=observations, m=variables
+  - Uses Eigen matrix operations for efficiency
+  - Complex covariance uses conjugate transpose
+
+file_format: 1

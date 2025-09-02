@@ -1,0 +1,131 @@
+id: linalg_decomp_schur
+label: Schur Decomposition
+category: '[Linear Algebra]/Decompositions'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.decomp_schur_${interface}_${type.fcn}(${shape}, ${compute_u})
+
+parameters:
+- id: interface
+  label: Interface
+  dtype: enum
+  default: sync
+  options: [sync, pdu]
+  option_labels: [Synchronous, PDU Messages]
+  hide: part
+
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, cf, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+
+- id: shape
+  label: Matrix Shape
+  dtype: int_vector
+  default: '[3, 3]'
+
+- id: compute_u
+  label: Compute U Matrix
+  dtype: bool
+  default: 'True'
+
+inputs:
+- label: in
+  domain: ${ 'message' if interface == 'pdu' else 'stream' }
+  dtype: ${type.t}
+  vlen: ${shape[0] * shape[1]}
+
+outputs:
+- label: u
+  domain: ${ 'message' if interface == 'pdu' else 'stream' }
+  dtype: ${type.t}
+  vlen: ${shape[0] * shape[1]}
+
+- label: t
+  domain: ${ 'message' if interface == 'pdu' else 'stream' }
+  dtype: ${type.t}
+  vlen: ${shape[0] * shape[1]}
+
+asserts:
+- ${len(shape) == 2}
+- ${shape[0] > 0 and shape[1] > 0}
+- ${shape[0] == shape[1]}
+
+documentation: |-
+  Computes the Schur decomposition of a square matrix A = U*T*Uᵀ.
+  
+  The Schur form T is an upper triangular (or quasi-triangular) matrix with:
+  - **Complex matrices**: Upper triangular with eigenvalues on the diagonal
+  - **Real matrices**: Quasi-triangular with 1×1 and 2×2 blocks on diagonal
+  
+  Mathematical decomposition:
+    A = U * T * Uᵀ
+    where U is orthogonal/unitary and T is in Schur form
+  
+  **Real Schur form:**
+  - 1×1 blocks: Real eigenvalues
+  - 2×2 blocks: Complex conjugate eigenvalue pairs
+  - Upper triangular above diagonal blocks
+  
+  **Complex Schur form:**
+  - Upper triangular matrix
+  - Eigenvalues exactly on the diagonal
+  
+  Applications:
+  - **Eigenvalue computation**: Direct access to all eigenvalues
+  - **Matrix functions**: Efficient computation via Schur form
+  - **Stability analysis**: Control theory and dynamical systems
+  - **Numerical analysis**: Condition number estimation
+  - **Jordan canonical form**: Preprocessing step
+  
+  Algorithm properties:
+  - **Stability**: Uses QR algorithm with implicit shifts
+  - **Complexity**: O(n³) operations for n×n matrices
+  - **Convergence**: Guaranteed for all finite matrices
+  - **Eigenvalue preservation**: Exact eigenvalues (within precision)
+  
+  **Output matrices:**
+  - **U matrix**: Orthogonal/unitary Schur vectors (n×n)
+  - **T matrix**: Upper triangular/quasi-triangular Schur form (n×n)
+  
+  **Verification:** A = U*T*Uᵀ (within numerical precision)
+  
+  **Eigenvalue extraction:**
+  - Complex case: eigenvalues = diag(T)
+  - Real case: eigenvalues from 1×1 and 2×2 diagonal blocks
+  
+  **Special cases:**
+  - Diagonal matrices: T = A, U = I (identity)
+  - Normal matrices: U contains eigenvectors
+  - Symmetric/Hermitian matrices: T is diagonal (eigendecomposition)
+  
+  **Numerical considerations:**
+  - More stable than direct eigenvalue methods
+  - Handles nearly singular and defective matrices
+  - Suitable for subsequent matrix function computations
+  - Preserves spectral properties of original matrix
+  
+  **Performance notes:**
+  - Essential for reliable eigenvalue computation
+  - Foundation for advanced matrix algorithms
+  - Efficient implementation using optimized LAPACK routines
+  - Preferred method for matrix function evaluation
+  
+  **Comparison with eigendecomposition:**
+  - More numerically stable and reliable
+  - Always exists for finite matrices
+  - Better conditioning for subsequent computations
+  - Triangular form enables efficient algorithms
+  
+  Parameters:
+  - **Shape**: Matrix dimensions [rows, cols] (must be square)
+  - **Compute U**: Whether to compute Schur vectors U (default: True)
+  - **Type**: Data precision and complex/real specification
+
+file_format: 1

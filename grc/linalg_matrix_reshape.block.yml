@@ -1,0 +1,86 @@
+id: linalg_matrix_reshape
+label: Matrix Reshape
+category: '[Linear Algebra]'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.matrix_reshape_${type.fcn}(${input_shape}, ${output_shape})
+
+parameters:
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, c, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+
+- id: input_shape
+  label: Input Shape
+  dtype: int_vector
+  default: [2, 3]
+
+- id: output_shape
+  label: Output Shape
+  dtype: int_vector
+  default: [3, 2]
+
+inputs:
+- domain: stream
+  dtype: ${type.t}
+  vlen: ${int(input_shape[0] * input_shape[1] if len(input_shape) >= 2 else input_shape[0])}
+
+outputs:
+- domain: stream
+  dtype: ${type.t}
+  vlen: ${int(output_shape[0] * output_shape[1] if len(output_shape) >= 2 else output_shape[0])}
+
+asserts:
+- ${len(input_shape) == 2}
+- ${len(output_shape) == 2}
+- ${input_shape[0] > 0 and input_shape[1] > 0}
+- ${output_shape[0] > 0 and output_shape[1] > 0}
+- ${input_shape[0] * input_shape[1] == output_shape[0] * output_shape[1]}
+
+documentation: |-
+  Reshapes input matrices to different dimensions while preserving data.
+
+  Mathematical operation: Reshape matrix from [m×n] to [p×q] where m×n = p×q
+
+  The reshape operation changes the matrix dimensions but preserves all elements.
+  Data is reorganized in row-major order: elements are read row-by-row from
+  the input matrix and written row-by-row to the output matrix.
+
+  This block supports:
+  - All numeric types (float, double, complex)
+  - Any matrix dimensions (as long as total elements match)
+  - Efficient memory-efficient reshaping
+
+  Use cases:
+  - Matrix format conversion
+  - Data reorganization for processing
+  - Changing vector to matrix representation
+  - Preparing data for matrix operations
+  - Signal processing layout changes
+
+  Parameters:
+  - Type: Data type of matrix elements
+  - Input Shape: Current matrix dimensions [rows, cols]
+  - Output Shape: Desired matrix dimensions [rows, cols]
+
+  **Requirements:**
+  - Total number of elements must be preserved: input_rows × input_cols = output_rows × output_cols
+  - Both input and output must be 2D matrices
+
+  **Examples:**
+  - [2×3] → [3×2]: 6 elements preserved
+  - [4×1] → [1×4]: vector to row vector
+  - [6×1] → [2×3]: column vector to matrix
+
+  **Performance Notes:**
+  - O(1) complexity - no data copying, only indexing change
+  - Memory-efficient implementation
+
+file_format: 1

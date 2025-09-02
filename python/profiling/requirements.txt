@@ -1,0 +1,5 @@
+# Requirements for GNU Radio Linear Algebra Performance Profiler CLI
+numpy>=1.21.0
+matplotlib>=3.5.0
+seaborn>=0.11.0
+psutil>=5.8.0

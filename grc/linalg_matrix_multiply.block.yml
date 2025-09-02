@@ -1,0 +1,87 @@
+id: linalg_matrix_multiply
+label: Matrix Multiply
+category: '[Linear Algebra]'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.matrix_multiply_${interface}_${type.fcn}(${shape}, ${num_inputs})
+
+parameters:
+- id: interface
+  label: Interface
+  dtype: enum
+  default: sync
+  options: [sync, pdu]
+  option_labels: [Synchronous, PDU Messages]
+
+- id: type
+  label: Type
+  dtype: enum
+  default: d
+  options: [f, d, cf, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+
+- id: shape
+  label: Matrix Shape
+  dtype: int_vector
+  default: [2, 2]
+
+- id: num_inputs
+  label: Number of Inputs
+  dtype: int
+  default: 2
+  hide: ${ 'part' if num_inputs == 2 else 'none' }
+
+inputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape[0] * shape[1] if len(shape) >= 2 else shape[0]) if interface == 'sync' else 1}
+  multiplicity: ${num_inputs}
+
+outputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape[0] * shape[1] if len(shape) >= 2 else shape[0]) if interface == 'sync' else 1}
+
+asserts:
+- ${len(shape) >= 1}
+- ${len(shape) <= 2}
+- ${all([x > 0 for x in shape])}
+- ${num_inputs >= 2}
+
+documentation: |-
+  Performs matrix multiplication of input matrices.
+
+  Mathematical operation: C = A × B × ... (sequential multiplication)
+
+  For matrix multiplication, the number of columns in the first matrix must equal
+  the number of rows in the second matrix. The output matrix has dimensions
+  matching the outer dimensions of the multiplication.
+
+  For multiple inputs, multiplication is performed sequentially: ((A × B) × C) × D...
+
+  This block supports:
+  - Multiple input matrices (≥2)
+  - All numeric types (float, double, complex)
+  - Proper matrix dimension checking
+
+  Use cases:
+  - Linear transformations
+  - System response calculations
+  - Filter bank operations
+  - Beamforming weights application
+
+  Parameters:
+  - Type: Data type of matrix elements
+  - Shape: Dimensions of input matrices [rows, cols]
+  - Number of Inputs: Number of matrices in multiplication chain
+
+  **Performance Notes:**
+  - O(n³) complexity for n×n matrix multiplication
+  - Uses optimized BLAS operations via Eigen library
+  - Dimension compatibility checked at runtime
+
+file_format: 1

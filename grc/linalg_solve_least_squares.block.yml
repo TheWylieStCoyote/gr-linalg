@@ -1,0 +1,126 @@
+id: linalg_solve_least_squares
+label: Solve Least Squares
+category: '[Linear Algebra]/Solvers'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.solve_least_squares_${interface}_${type.fcn}(${shape_a}, ${shape_b}, ${method}, ${tolerance})
+
+parameters:
+- id: interface
+  label: Interface
+  dtype: enum
+  default: sync
+  options: [sync, pdu]
+  option_labels: [Synchronous, PDU Messages]
+  hide: part
+
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, cf, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+
+- id: shape_a
+  label: Matrix A Shape
+  dtype: int_vector
+  default: '[3, 2]'
+
+- id: shape_b
+  label: Vector b Shape  
+  dtype: int_vector
+  default: '[3, 1]'
+
+- id: method
+  label: Method
+  dtype: enum
+  default: AUTO
+  options: [AUTO, NORMAL_EQ, QR, SVD]
+  option_labels: [Automatic, Normal Equations, QR Decomposition, SVD]
+
+- id: tolerance
+  label: Tolerance
+  dtype: float
+  default: 1e-10
+
+inputs:
+- label: a
+  domain: ${ 'message' if interface == 'pdu' else 'stream' }
+  dtype: ${type.t}
+  vlen: ${shape_a[0] * shape_a[1]}
+
+- label: b
+  domain: ${ 'message' if interface == 'pdu' else 'stream' }
+  dtype: ${type.t}
+  vlen: ${shape_b[0] * shape_b[1]}
+
+outputs:
+- label: out
+  domain: ${ 'message' if interface == 'pdu' else 'stream' }
+  dtype: ${type.t}
+  vlen: ${shape_a[1] * shape_b[1]}
+
+asserts:
+- ${len(shape_a) == 2}
+- ${len(shape_b) == 2}
+- ${shape_a[0] > 0 and shape_a[1] > 0}
+- ${shape_b[0] > 0 and shape_b[1] > 0}
+- ${shape_a[0] == shape_b[0]}
+- ${shape_b[1] == 1}
+- ${tolerance > 0}
+
+documentation: |-
+  Solves overdetermined linear least squares problems min ||Ax - b||².
+  
+  For systems where A is an m×n matrix with m ≥ n (more equations than unknowns),
+  this block finds the solution x that minimizes the 2-norm of the residual Ax - b.
+  
+  Mathematical formulation:
+    minimize: ||Ax - b||₂² = (Ax - b)ᵀ(Ax - b)
+    solution: x = (AᵀA)⁻¹Aᵀb (normal equations, when AᵀA is invertible)
+  
+  Available methods:
+  - **AUTO**: Automatically selects best method based on condition number
+  - **NORMAL_EQ**: Normal equations (AᵀA)x = Aᵀb (fast, requires good conditioning)
+  - **QR**: QR decomposition (more stable, recommended for most cases)
+  - **SVD**: Singular Value Decomposition (most stable, handles rank-deficient matrices)
+  
+  Method selection criteria:
+  - Well-conditioned (condition number < 1e6): Normal Equations
+  - Moderately conditioned: QR decomposition
+  - Ill-conditioned or rank-deficient: SVD
+  
+  Applications:
+  - System identification and parameter estimation
+  - Signal fitting and interpolation
+  - Statistical regression analysis
+  - Antenna array beamforming
+  - Channel estimation in communications
+  - Curve fitting and data approximation
+  
+  Input requirements:
+  - Matrix A: m×n with m ≥ n (overdetermined system)
+  - Vector b: m×1 (same number of rows as A)
+  - Output x: n×1 (least squares solution)
+  
+  Performance characteristics:
+  - Normal Equations: O(n³), fastest but least stable
+  - QR Decomposition: O(mn²), good balance of speed and stability  
+  - SVD: O(mn²), slowest but most robust for difficult problems
+  
+  **Numerical stability:**
+  - Tolerance parameter controls convergence criteria
+  - SVD method handles rank-deficient and near-singular matrices
+  - QR method provides good numerical stability for most problems
+  - Normal equations fastest but can fail for ill-conditioned matrices
+  
+  **Error handling:**
+  - Automatically detects rank-deficient matrices
+  - Returns least-norm solution for under-determined systems
+  - Provides numerical stability warnings when appropriate
+
+file_format: 1

@@ -1,0 +1,93 @@
+id: linalg_vector_product_inner
+label: Vector Inner Product
+category: '[Linear Algebra]/Vector Operations'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.vector_product_inner_${type.fcn}(${shape_a}, ${shape_b})
+
+parameters:
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, cf, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+
+- id: shape_a
+  label: Vector A Shape
+  dtype: int_vector
+  default: [3]
+
+- id: shape_b
+  label: Vector B Shape
+  dtype: int_vector
+  default: [3]
+
+inputs:
+- label: a
+  domain: stream
+  dtype: ${type.t}
+  vlen: ${int(shape_a[0] if len(shape_a) >= 1 else 1)}
+- label: b
+  domain: stream
+  dtype: ${type.t}
+  vlen: ${int(shape_b[0] if len(shape_b) >= 1 else 1)}
+
+outputs:
+- domain: stream
+  dtype: ${type.t}
+  vlen: 1
+
+asserts:
+- ${len(shape_a) == 1}
+- ${len(shape_b) == 1}
+- ${shape_a[0] > 0 and shape_b[0] > 0}
+- ${shape_a[0] == shape_b[0]}
+
+documentation: |-
+  Computes the inner product (dot product) of two vectors.
+
+  Mathematical operation: a · b = Σ(a_i * b_i) for real vectors,
+                                 Σ(conj(a_i) * b_i) for complex vectors
+
+  The inner product is a fundamental operation that produces a scalar
+  value representing the degree of similarity between two vectors.
+
+  This block supports:
+  - All numeric types (float, double, complex)
+  - Vectors of any dimension (both inputs must have same dimension)
+  - Complex conjugate handling for complex vectors
+
+  Use cases:
+  - Signal correlation analysis
+  - Vector similarity measurement
+  - Projection calculations
+  - Pattern matching in signal processing
+  - Feature vector comparison
+
+  Parameters:
+  - Type: Data type of vector elements
+  - Vector A Shape: Dimensions of first vector [length]
+  - Vector B Shape: Dimensions of second vector [length] (must match A)
+
+  **Mathematical Properties:**
+  - a · b = b · a for real vectors
+  - a · b = conj(b · a) for complex vectors
+  - a · a = ||a||² (squared magnitude)
+  - Linearity: (αa + βb) · c = α(a · c) + β(b · c)
+
+  **Special Cases:**
+  - Orthogonal vectors: a · b = 0
+  - Unit vectors: ||a|| = ||b|| = 1 → a · b = cos(θ)
+  - Zero vectors: 0 · b = 0
+
+  **Performance Notes:**
+  - O(n) complexity for n-dimensional vectors
+  - Optimized using SIMD operations where available
+  - Numerically stable implementation
+
+file_format: 1

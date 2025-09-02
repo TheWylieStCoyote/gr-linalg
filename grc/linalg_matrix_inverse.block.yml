@@ -1,0 +1,94 @@
+id: linalg_matrix_inverse
+label: Matrix Inverse
+category: '[Linear Algebra]'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.matrix_inverse_${interface}_${type.fcn}(${shape})
+
+parameters:
+- id: interface
+  label: Interface
+  dtype: enum
+  default: sync
+  options: [sync, pdu]
+  option_labels: [Synchronous, PDU Messages]
+
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, cf, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+
+- id: shape
+  label: Matrix Shape
+  dtype: int_vector
+  default: [3, 3]
+
+inputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape[0] * shape[1] if len(shape) >= 2 else shape[0]) if interface == 'sync' else 1}
+
+outputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape[0] * shape[1] if len(shape) >= 2 else shape[0]) if interface == 'sync' else 1}
+
+asserts:
+- ${len(shape) == 2}
+- ${shape[0] > 0 and shape[1] > 0}
+- ${shape[0] == shape[1]}
+
+documentation: |-
+  Computes the inverse of square matrices.
+
+  Mathematical operation: A⁻¹ where A × A⁻¹ = I (identity matrix)
+
+  The matrix inverse is fundamental in linear algebra for solving linear
+  systems, matrix division, and transformation inversions. Only square
+  non-singular matrices have inverses.
+
+  This block supports:
+  - All numeric types (float, double, complex)
+  - Square matrices only (N×N)
+  - Automatic singularity detection
+
+  Use cases:
+  - Solving linear equation systems (Ax = b → x = A⁻¹b)
+  - Transformation matrix inversion
+  - Least squares solutions
+  - Control system design
+  - Signal processing filter design
+
+  Parameters:
+  - Type: Data type of matrix elements
+  - Shape: Matrix dimensions [rows, cols] (must be square)
+
+  **Mathematical Properties:**
+  - (A⁻¹)⁻¹ = A
+  - (AB)⁻¹ = B⁻¹A⁻¹
+  - (Aᵀ)⁻¹ = (A⁻¹)ᵀ
+  - det(A⁻¹) = 1/det(A)
+
+  **Special Cases:**
+  - Singular matrix: No inverse exists (throws error)
+  - Identity matrix: Inverse = Identity
+  - Orthogonal matrix: A⁻¹ = Aᵀ
+  - Diagonal matrix: Inverse = reciprocal of diagonal elements
+
+  **Numerical Considerations:**
+  - Condition number affects numerical stability
+  - Small determinant indicates near-singularity
+  - Uses LU decomposition with partial pivoting
+
+  **Performance Notes:**
+  - O(n³) complexity for n×n matrices
+  - Numerically stable implementation using LAPACK
+  - Memory efficient in-place computation where possible
+
+file_format: 1

@@ -1,0 +1,82 @@
+id: linalg_matrix_add
+label: Matrix Add
+category: '[Linear Algebra]'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.matrix_add_${type.fcn}(${shape}, ${num_inputs})
+
+parameters:
+- id: interface
+  label: Interface
+  dtype: enum
+  default: sync
+  options: [sync, pdu]
+  option_labels: [Synchronous, PDU Messages]
+
+- id: type
+  label: Type
+  dtype: enum
+  default: d
+  options: [f, d, cf, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [sync_f, sync_d, sync_cf, sync_cd]
+    t: [float, double, complex, complex]
+
+- id: shape
+  label: Matrix Shape
+  dtype: int_vector
+  default: [2, 2]
+
+- id: num_inputs
+  label: Number of Inputs
+  dtype: int
+  default: 2
+  hide: ${ 'part' if num_inputs == 2 else 'none' }
+
+inputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape[0] * shape[1] if len(shape) >= 2 else shape[0]) if interface == 'sync' else 1}
+  multiplicity: ${num_inputs}
+
+outputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape[0] * shape[1] if len(shape) >= 2 else shape[0]) if interface == 'sync' else 1}
+
+asserts:
+- ${len(shape) >= 1}
+- ${len(shape) <= 2}
+- ${all([x > 0 for x in shape])}
+- ${num_inputs >= 2}
+
+documentation: |-
+  Performs element-wise addition of multiple input matrices.
+
+  Mathematical operation: C = A + B + ... (for multiple inputs)
+
+  All input matrices must have the same shape. The output matrix will have the same shape as the inputs.
+
+  This block supports:
+  - Multiple input matrices (≥2)
+  - All numeric types (float, double, complex)
+  - Broadcasting for compatible tensor shapes
+
+  Use cases:
+  - Matrix sum operations
+  - Signal combining
+  - Multi-channel addition
+  - Accumulation operations
+
+  Parameters:
+  - Type: Data type of matrix elements
+  - Shape: Dimensions of input/output matrices [rows, cols]
+  - Number of Inputs: Number of matrices to add together
+
+  **Performance Notes:**
+  - O(n*m) complexity where n×m is matrix size
+  - Vectorized operations via Eigen library
+
+file_format: 1

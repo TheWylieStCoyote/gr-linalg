@@ -1,0 +1,115 @@
+id: linalg_matrix_correlation
+label: Matrix Correlation
+category: '[Linear Algebra]'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.matrix_correlation_${interface}_${type.fcn}(${shape}, ${method})
+
+parameters:
+- id: interface
+  label: Interface
+  dtype: enum
+  default: sync
+  options: [sync, pdu]
+  option_labels: [Synchronous, PDU Messages]
+
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, cf, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [f, d, cf, cd]
+    t: [float, double, complex, complex]
+
+- id: shape
+  label: Data Matrix Shape
+  dtype: int_vector
+  default: [100, 3]
+
+- id: method
+  label: Correlation Method
+  dtype: enum
+  default: 0
+  options: [0, 1, 2]
+  option_labels: ['Pearson (Linear)', 'Spearman (Rank)', 'Kendall (Tau)']
+
+inputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape[0] * shape[1] if len(shape) >= 2 else shape[0]) if interface == 'sync' else 1}
+
+outputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape[1] * shape[1]) if interface == 'sync' else 1}
+
+asserts:
+- ${len(shape) == 2}
+- ${shape[0] > 2}
+- ${shape[1] > 0}
+- ${method >= 0 and method <= 2}
+
+documentation: |-
+  Computes the correlation matrix of input data using various correlation measures.
+
+  Mathematical operations:
+  - Pearson: ρ = Cov(X,Y) / (σₓ × σᵧ)
+  - Spearman: Pearson correlation of rank-transformed data
+  - Kendall: τ = (concordant pairs - discordant pairs) / total pairs
+
+  This block computes the sample correlation matrix of the input data matrix,
+  where each column represents a variable and each row represents an observation.
+
+  The correlation matrix is a square symmetric matrix with:
+  - Diagonal elements always equal to 1 (perfect self-correlation)
+  - Off-diagonal elements are correlation coefficients [-1, 1]
+
+  Correlation Methods:
+  - Pearson: Measures linear relationships, sensitive to outliers
+  - Spearman: Measures monotonic relationships, rank-based (robust)
+  - Kendall: Measures concordance, robust to outliers
+
+  This block supports:
+  - All numeric types (float, double, complex)
+  - Three different correlation measures
+  - Synchronous and PDU message interfaces
+  - Robust statistical methods
+
+  Use cases:
+  - Feature correlation analysis
+  - Multicollinearity detection
+  - Signal similarity measurement
+  - Portfolio correlation analysis
+  - Array processing correlation
+  - Biomedical signal analysis
+  - Financial time series analysis
+
+  Parameters:
+  - Type: Data type of matrix elements
+  - Data Matrix Shape: Input dimensions [observations, variables]
+  - Correlation Method: Statistical measure to compute
+
+  **Output:**
+  - Correlation matrix of size [variables × variables]
+  - Values range from -1 (perfect negative) to +1 (perfect positive)
+
+  **Requirements:**
+  - At least 3 observations (rows > 2) for robust correlation
+  - Input matrix must be 2D [observations, variables]
+  - Spearman/Kendall require at least 3 distinct values per variable
+
+  **Method Selection Guide:**
+  - Pearson: Linear relationships, normally distributed data
+  - Spearman: Monotonic relationships, ordinal data, outliers present
+  - Kendall: Small samples, non-parametric analysis, robust estimation
+
+  **Performance Notes:**
+  - Pearson: O(n×m²) where n=observations, m=variables
+  - Spearman: O(n×m²×log n) due to ranking
+  - Kendall: O(n²×m²) for pairwise comparisons
+  - Complex correlation uses magnitude-based measures
+
+file_format: 1

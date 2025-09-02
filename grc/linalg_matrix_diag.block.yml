@@ -1,0 +1,99 @@
+id: linalg_matrix_diag
+label: Matrix Diagonal
+category: '[Linear Algebra]'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.matrix_diag_${interface}_${type.fcn}(${shape}, ${k})
+
+parameters:
+- id: interface
+  label: Interface
+  dtype: enum
+  default: sync
+  options: [sync, pdu]
+  option_labels: [Synchronous, PDU Messages]
+
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, cf, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+
+- id: shape
+  label: Matrix Shape
+  dtype: int_vector
+  default: [3, 3]
+
+- id: k
+  label: Diagonal Offset
+  dtype: int
+  default: 0
+
+inputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape[0] * shape[1] if len(shape) >= 2 else shape[0]) if interface == 'sync' else 1}
+
+outputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(min(shape[0], shape[1]) - abs(k) if len(shape) >= 2 and min(shape[0], shape[1]) > abs(k) else 1) if interface == 'sync' else 1}
+
+asserts:
+- ${len(shape) == 2}
+- ${shape[0] > 0 and shape[1] > 0}
+- ${abs(k) < min(shape[0], shape[1])}
+
+documentation: |-
+  Extracts diagonal elements from matrices.
+
+  Mathematical operation: Extract diagonal elements d_i = A[i+k, i] or A[i, i+k]
+
+  This block extracts the diagonal elements of a matrix, which can be the
+  main diagonal (k=0) or off-diagonals (k≠0). The extracted elements form
+  a vector containing the diagonal values.
+
+  This block supports:
+  - All numeric types (float, double, complex)
+  - Rectangular matrices (M×N)
+  - Configurable diagonal offset (super/sub diagonals)
+
+  Use cases:
+  - Eigenvalue extraction from diagonal matrices
+  - Matrix decomposition post-processing
+  - Diagonal matrix analysis
+  - Feature extraction from structured matrices
+  - Covariance matrix diagonal extraction
+
+  Parameters:
+  - Type: Data type of matrix elements
+  - Shape: Matrix dimensions [rows, cols]
+  - Diagonal Offset: Which diagonal to extract (k=0: main, k>0: super, k<0: sub)
+
+  **Diagonal Offset:**
+  - k = 0: Main diagonal (A[0,0], A[1,1], A[2,2], ...)
+  - k > 0: Super-diagonal (A[0,k], A[1,k+1], A[2,k+2], ...)
+  - k < 0: Sub-diagonal (A[-k,0], A[-k+1,1], A[-k+2,2], ...)
+
+  **Output Size:**
+  - Main diagonal (k=0): min(rows, cols) elements
+  - Off-diagonal: min(rows, cols) - |k| elements
+  - Empty when |k| ≥ min(rows, cols)
+
+  **Special Cases:**
+  - Square matrix: Main diagonal has n elements
+  - Tall matrix (m>n): Main diagonal has n elements
+  - Wide matrix (m<n): Main diagonal has m elements
+  - Diagonal matrix: Main diagonal contains all non-zero elements
+
+  **Performance Notes:**
+  - O(min(m,n)) complexity for diagonal extraction
+  - Memory efficient - only extracts needed elements
+  - No matrix operations required
+
+file_format: 1

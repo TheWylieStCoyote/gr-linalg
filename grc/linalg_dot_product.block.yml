@@ -1,0 +1,94 @@
+id: linalg_dot_product
+label: Dot Product
+category: '[Linear Algebra]'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.dot_product_${interface}_${type.fcn}(${shape_a}, ${shape_b})
+
+parameters:
+- id: interface
+  label: Interface
+  dtype: enum
+  default: sync
+  options: [sync, pdu]
+  option_labels: [Synchronous, PDU Messages]
+
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, c, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+
+- id: shape_a
+  label: Vector A Shape
+  dtype: int_vector
+  default: [3]
+
+- id: shape_b
+  label: Vector B Shape
+  dtype: int_vector
+  default: [3]
+
+inputs:
+- label: a
+  domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape_a[0] if len(shape_a) >= 1 else 1) if interface == 'sync' else 1}
+
+- label: b
+  domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape_b[0] if len(shape_b) >= 1 else 1) if interface == 'sync' else 1}
+
+outputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: 1
+
+asserts:
+- ${len(shape_a) == 1}
+- ${len(shape_b) == 1}
+- ${shape_a[0] > 0}
+- ${shape_b[0] > 0}
+- ${shape_a[0] == shape_b[0]}
+
+documentation: |-
+  Computes the dot product (inner product) of two input vectors.
+
+  Mathematical operation: a · b = Σ(aᵢ * bᵢ)
+  For complex vectors: a · b = Σ(conj(aᵢ) * bᵢ)
+
+  The dot product measures the similarity between vectors and is fundamental
+  in many signal processing applications.
+
+  This block supports:
+  - All numeric types (float, double, complex)
+  - Equal-length vector inputs
+  - Scalar output representing the dot product
+
+  Use cases:
+  - Correlation analysis
+  - Projection calculations
+  - Similarity measurements
+  - Inner product computations
+  - Beamforming weight application
+
+  Parameters:
+  - Type: Data type of vector elements
+  - Vector A Shape: Dimensions of first input vector [length]
+  - Vector B Shape: Dimensions of second input vector [length]
+
+  **Requirements:**
+  - Both input vectors must have the same length
+  - Vector shapes must be 1-dimensional
+
+  **Performance Notes:**
+  - O(n) complexity where n is vector length
+  - Optimized implementation using Eigen library
+
+file_format: 1

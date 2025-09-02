@@ -1,0 +1,136 @@
+id: linalg_vector_outer_product
+label: Vector Outer Product
+category: '[Linear Algebra]'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.vector_outer_product_${interface}_${type.fcn}()
+
+parameters:
+- id: interface
+  label: Interface
+  dtype: enum
+  default: sync
+  options: [sync, pdu]
+  option_labels: [Synchronous, PDU Messages]
+
+- id: type
+  label: Type
+  dtype: enum
+  options: [f, d, cf, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+  default: f
+
+- id: shape_a
+  label: Vector A Shape
+  dtype: int_vector
+  default: [3]
+
+- id: shape_b
+  label: Vector B Shape
+  dtype: int_vector
+  default: [2]
+
+inputs:
+- label: a
+  domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape_a[0] if len(shape_a) >= 1 else 1) if interface == 'sync' else 1}
+
+- label: b
+  domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape_b[0] if len(shape_b) >= 1 else 1) if interface == 'sync' else 1}
+
+outputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape_a[0] * shape_b[0] if len(shape_a) >= 1 and len(shape_b) >= 1 else 1) if interface == 'sync' else 1}
+
+asserts:
+- ${len(shape_a) == 1}
+- ${len(shape_b) == 1}
+- ${shape_a[0] > 0}
+- ${shape_b[0] > 0}
+
+documentation: |-
+  Vector Outer Product (Tensor Product)
+
+  Computes the outer product of two vectors: result(i,j) = a(i) * b(j)
+
+  **Mathematical Operation:**
+  Given vectors a ∈ ℝᵐ and b ∈ ℝⁿ, produces matrix C ∈ ℝᵐˣⁿ where:
+  C(i,j) = a(i) × b(j)
+
+  This creates a rank-1 matrix from two vectors, also known as the tensor product.
+
+  **Input Requirements:**
+  - vector_a: First vector (any length m), treated as column vector
+  - vector_b: Second vector (any length n), treated as column vector
+  - Vectors can be provided as 1×N, N×1, or general matrices (flattened to vectors)
+
+  **Output:**
+  - Matrix of size m×n where m=length(a), n=length(b)
+  - Element (i,j) contains the product a[i] × b[j]
+
+  **Key Properties:**
+  - Input vectors can have different lengths
+  - Result matrix has rank 1 (unless one vector is zero)
+  - Complex arithmetic supported: preserves phase relationships
+  - Commutative up to transpose: a⊗b = (b⊗a)ᵀ
+
+  **Vector Shape Handling:**
+  - 1×N matrices treated as N-element vectors
+  - N×1 matrices treated as N-element vectors
+  - M×N matrices flattened to MN-element vectors
+  - Empty vectors (length 0) cause operation failure
+
+  **Mathematical Examples:**
+  ```
+  a = [1, 2, 3]ᵀ, b = [4, 5]ᵀ
+  Result = [1×4  1×5]   = [4   5 ]
+           [2×4  2×5]     [8   10]
+           [3×4  3×5]     [12  15]
+  ```
+
+  **Applications:**
+  - **Rank-1 Matrix Construction:** Building low-rank matrix approximations
+  - **Projection Matrices:** P = v⊗v / ||v||² for vector projections
+  - **Covariance Estimation:** Outer products of centered data vectors
+  - **Beamforming:** Array response vectors and weight computation
+  - **Signal Processing:** Correlation matrix construction
+  - **Machine Learning:** Feature interactions, kernel methods
+  - **Quantum Computing:** Tensor product spaces, entangled states
+
+  **Performance Characteristics:**
+  - Time Complexity: O(mn) where m,n are vector lengths
+  - Space Complexity: O(mn) for output matrix
+  - Memory Efficient: No temporary storage, direct computation
+  - Vectorization: Uses optimized element-wise multiplication
+
+  **Special Cases:**
+  - Scalar×Scalar: 1×1 matrix result
+  - Zero Vector: Produces all-zero matrix
+  - Unit Vectors: Produces binary pattern matrices
+  - Complex Vectors: Preserves magnitude and phase relationships
+
+  **Error Conditions:**
+  - Fewer than 2 input vectors provided
+  - Output matrix size doesn't match expected m×n dimensions
+  - Input shapes cannot be interpreted as vectors
+
+  **Numerical Properties:**
+  - Preserves input precision (no accumulated rounding errors)
+  - Complex conjugation not applied (pure tensor product)
+  - Scales linearly with vector magnitudes
+  - Numerically stable for all finite inputs
+
+  The outer product is fundamental in linear algebra and appears in many advanced
+  applications including matrix decompositions, statistical analysis, and signal
+  processing algorithms. It provides a bridge between vector operations and
+  matrix operations, enabling construction of structured matrices from vector data.
+
+file_format: 1

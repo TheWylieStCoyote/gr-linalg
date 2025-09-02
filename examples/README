@@ -1,4 +1,23 @@
-It is considered good practice to add examples in here to demonstrate the
-functionality of your OOT module. Python scripts, GRC flow graphs or other
-code can go here.
+# Examples
 
+Some examples of using gr-linalg for hypothetical applicaitons that hopefully are a good reference.
+
+## Gnu Radio Companion
+
+Here are a few examples focused on Gnu Radio Companion.
+
+### Spacial Beam Former
+
+This is a simple example using using gr-linalg to perform basic beam forming of 8 spacial channels.
+
+### Code Devision Multiple Access
+
+Basic CDMA example
+
+### Simple Kalman Filter
+
+This is a simple example of a Kalman filter of a particle in 2D with first and second dirivatives.
+
+## Python
+
+## C++

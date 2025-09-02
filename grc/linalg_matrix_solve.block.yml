@@ -1,0 +1,113 @@
+id: linalg_matrix_solve
+label: Matrix Solve (Ax = b)
+category: '[Linear Algebra]'
+
+templates:
+  imports: |-
+    from gnuradio import linalg
+  make: linalg.matrix_solve_${type.fcn}(${shape_a}, ${shape_b}, ${method}, ${tolerance})
+
+parameters:
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, c, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+
+- id: shape_a
+  label: Matrix A Shape
+  dtype: int_vector
+  default: [3, 3]
+
+- id: shape_b
+  label: Vector/Matrix b Shape
+  dtype: int_vector
+  default: [3, 1]
+
+- id: method
+  label: Solver Method
+  dtype: enum
+  default: 'linalg.solver_method.AUTO'
+  options: ['linalg.solver_method.AUTO', 'linalg.solver_method.LU', 'linalg.solver_method.QR', 'linalg.solver_method.SVD']
+  option_labels: ['Auto (best choice)', 'LU Decomposition', 'QR Decomposition', 'SVD (most stable)']
+
+- id: tolerance
+  label: Tolerance
+  dtype: float
+  default: 1e-6
+  hide: part
+
+inputs:
+- label: A
+  domain: stream
+  dtype: ${type.t}
+  vlen: ${int(shape_a[0] * shape_a[1] if len(shape_a) >= 2 else shape_a[0])}
+
+- label: b
+  domain: stream
+  dtype: ${type.t}
+  vlen: ${int(shape_b[0] * shape_b[1] if len(shape_b) >= 2 else shape_b[0])}
+
+outputs:
+- label: x
+  domain: stream
+  dtype: ${type.t}
+  vlen: ${int(shape_b[0] * shape_b[1] if len(shape_b) >= 2 else shape_b[0])}
+
+asserts:
+- ${len(shape_a) == 2}
+- ${len(shape_b) >= 1 and len(shape_b) <= 2}
+- ${shape_a[0] > 0 and shape_a[1] > 0}
+- ${shape_b[0] > 0}
+- ${shape_a[0] == shape_b[0]}
+- ${tolerance > 0}
+
+documentation: |-
+  Solves the linear system Ax = b for x.
+
+  Mathematical operation: x = A⁻¹b
+
+  This block finds the solution vector x that satisfies the equation Ax = b,
+  where A is a square coefficient matrix and b is the right-hand side vector.
+
+  Solver Methods:
+  - AUTO: Automatically selects best method based on matrix properties
+  - LU: Fast for general matrices, good for multiple solves
+  - QR: Stable for overdetermined systems
+  - SVD: Most stable, handles rank-deficient matrices
+
+  This block supports:
+  - All numeric types (float, double, complex)
+  - Square coefficient matrices
+  - Vector or matrix right-hand sides
+  - Multiple solver algorithms
+
+  Use cases:
+  - Linear equation solving
+  - Least squares problems
+  - System identification
+  - Filter coefficient calculation
+  - Inverse filtering
+
+  Parameters:
+  - Type: Data type of matrix/vector elements
+  - Matrix A Shape: Coefficient matrix dimensions [rows, cols] (must be square)
+  - Vector/Matrix b Shape: Right-hand side dimensions [rows, cols]
+  - Solver Method: Algorithm to use for solving
+  - Tolerance: Numerical tolerance for convergence
+
+  **Requirements:**
+  - Matrix A must be square (rows = cols)
+  - Number of rows in A must equal number of rows in b
+  - Matrix A should be non-singular for unique solutions
+
+  **Performance Notes:**
+  - LU: O(n³) factorization + O(n²) solve
+  - QR: O(n³) factorization + O(n²) solve
+  - SVD: O(n³) but most numerically stable
+
+file_format: 1

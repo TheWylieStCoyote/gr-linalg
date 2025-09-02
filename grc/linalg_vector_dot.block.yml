@@ -1,0 +1,74 @@
+id: linalg_vector_dot
+label: Vector Dot Product
+category: '[linalg]'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.dot_product_${interface}_${type.fcn}(${shape_0}, ${shape_1})
+
+parameters:
+- id: interface
+  label: Interface
+  dtype: enum
+  default: sync
+  options: [sync, pdu]
+  option_labels: [Synchronous, PDU Messages]
+  hide: part
+
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, c, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+
+- id: shape_0
+  label: Vector A Shape
+  dtype: int_vector
+  default: '[3]'
+
+- id: shape_1
+  label: Vector B Shape
+  dtype: int_vector
+  default: '[3]'
+
+inputs:
+- label: a
+  domain: ${ 'message' if interface == 'pdu' else 'stream' }
+  dtype: ${type.t}
+  vlen: ${shape_0[0]}
+
+- label: b
+  domain: ${ 'message' if interface == 'pdu' else 'stream' }
+  dtype: ${type.t}
+  vlen: ${shape_1[0]}
+
+outputs:
+- label: out
+  domain: ${ 'message' if interface == 'pdu' else 'stream' }
+  dtype: ${type.t}
+  vlen: 1
+
+asserts:
+- ${len(shape_0) == 1}
+- ${len(shape_1) == 1}
+- ${shape_0[0] == shape_1[0]}
+
+documentation: |-
+  Compute the dot product (scalar product) of two vectors.
+  
+  For vectors a and b of equal length n, the dot product is:
+  a · b = Σ(a[i] * b[i]) for i = 0 to n-1
+  
+  For complex vectors, the dot product uses the conjugate of the first vector:
+  a · b = Σ(conj(a[i]) * b[i]) for i = 0 to n-1
+  
+  The output is always a scalar (single value).
+  
+  Note: This block is functionally identical to the dot_product block and is
+  provided for naming compatibility.
+
+file_format: 1

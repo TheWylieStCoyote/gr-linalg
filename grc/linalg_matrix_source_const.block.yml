@@ -1,0 +1,96 @@
+id: linalg_matrix_source_const
+label: Matrix Constant Source
+category: '[Linear Algebra]/Sources'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.matrix_source_const_${interface}_${type.fcn}(${matrix}, ${shape})
+
+parameters:
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, cf, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+
+- id: interface
+  label: Interface
+  dtype: enum
+  default: sync
+  options: [sync, pdu]
+  option_labels: [Synchronous, PDU Messages]
+
+- id: matrix
+  label: Matrix Data
+  dtype: raw
+  default: '[[1.0, 0.0], [0.0, 1.0]]'
+
+- id: shape
+  label: Matrix Shape
+  dtype: int_vector
+  default: [2, 2]
+
+inputs: []
+
+outputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape[0] * shape[1] if len(shape) >= 2 else shape[0]) if interface == 'sync' else 1}
+
+asserts:
+- ${len(shape) == 2}
+- ${shape[0] > 0 and shape[1] > 0}
+
+documentation: |-
+  Generates constant matrices for testing and initialization.
+  
+  This source block outputs a constant matrix with user-defined values,
+  providing a convenient way to inject known matrices into flowgraphs
+  for testing, initialization, or as reference signals.
+  
+  This block supports:
+  - All numeric types (float, double, complex)
+  - Both streaming (sync) and message (PDU) interfaces
+  - Arbitrary matrix dimensions and values
+  - Static matrix content (values set at initialization)
+  
+  Use cases:
+  - Test signal generation for matrix operations
+  - Known reference matrices for validation
+  - Identity matrices, calibration matrices
+  - Filter coefficient matrices
+  - System initialization with constant matrices
+  
+  Parameters:
+  - Type: Data type of matrix elements
+  - Interface: Synchronous (streaming) or PDU (message-based)
+  - Matrix Data: Matrix content as nested list [[row1], [row2], ...]
+  - Shape: Matrix dimensions [rows, cols]
+  
+  **Matrix Data Format:**
+  - Nested list format: [[1.0, 2.0], [3.0, 4.0]]
+  - Must match specified shape dimensions
+  - Complex values: [[1+2j, 3+4j], [5+6j, 7+8j]]
+  
+  **Interface Modes:**
+  - Sync: Continuous streaming output, vector length = rows × cols
+  - PDU: Message-based output, each activation sends one matrix
+  
+  **Common Matrices:**
+  - Identity: [[1, 0], [0, 1]] with shape [2, 2]
+  - Ones: [[1, 1], [1, 1]] with shape [2, 2]
+  - Test: [[1, 2], [3, 4]] with shape [2, 2]
+  
+  **Performance Notes:**
+  - Matrix values are fixed at block creation time
+  - No runtime modification of matrix content
+  - Efficient for repeated output of same matrix
+  - Memory usage proportional to matrix size
+
+#  'file_format' specifies the version of the GRC yml format used in the file
+#  and should usually not be changed.
+file_format: 1

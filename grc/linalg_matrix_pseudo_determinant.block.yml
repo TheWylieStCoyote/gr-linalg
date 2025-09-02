@@ -1,0 +1,96 @@
+id: linalg_matrix_pseudo_determinant
+label: Matrix Pseudo-Determinant
+category: '[Linear Algebra]'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.matrix_pseudo_determinant_${interface}_${type.fcn}(${shape})
+
+parameters:
+- id: interface
+  label: Interface
+  dtype: enum
+  default: sync
+  options: [sync, pdu]
+  option_labels: [Synchronous, PDU Messages]
+
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, c, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+
+- id: shape
+  label: Matrix Shape
+  dtype: int_vector
+  default: [3, 3]
+
+inputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape[0] * shape[1] if len(shape) >= 2 else shape[0]) if interface == 'sync' else 1}
+
+outputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: 1
+
+asserts:
+- ${len(shape) == 2}
+- ${shape[0] > 0 and shape[1] > 0}
+
+documentation: |-
+  Computes the pseudo-determinant of rectangular matrices.
+  
+  Mathematical operation: pseudo_det(A) = ∏(σᵢ > 0) σᵢ where σᵢ are singular values
+  
+  The pseudo-determinant is defined as the product of all non-zero singular values.
+  It provides a meaningful volume measure for both square and rectangular matrices,
+  including rank-deficient cases where the standard determinant is undefined.
+  
+  This block supports:
+  - All numeric types (float, double, complex)
+  - Rectangular matrices (M×N) and square matrices
+  - Scalar output representing the pseudo-determinant value
+  - SVD-based robust numerical computation
+  
+  Use cases:
+  - Volume measure for rectangular matrices
+  - Rank-deficient matrix analysis
+  - Generalized invertibility testing
+  - Matrix conditioning assessment
+  - Robust alternative to determinant
+  - Signal subspace analysis
+  
+  Parameters:
+  - Type: Data type of matrix elements  
+  - Shape: Matrix dimensions [rows, cols] (any rectangular size)
+  
+  **Mathematical Properties:**
+  - For square full-rank matrix: pseudo_det(A) = |det(A)|
+  - For rank-deficient matrix: pseudo_det(A) < |det(A)|
+  - For zero matrix: pseudo_det(A) = 0
+  - Always non-negative real value
+  - Invariant under orthogonal transformations
+  
+  **Relationship to Standard Determinant:**
+  - Square full-rank: pseudo_det = |determinant|
+  - Square singular: pseudo_det = 0 (same as determinant)
+  - Rectangular: pseudo_det provides meaningful volume measure
+  
+  **Implementation Details:**
+  - Uses SVD decomposition for numerical stability
+  - Automatic tolerance for zero singular values
+  - O(min(m,n)×m×n) complexity for m×n matrices
+  - Handles complex matrices properly
+  
+  **Special Cases:**
+  - Identity matrix: pseudo_det = 1
+  - Zero matrix: pseudo_det = 0
+  - Rank-1 matrix: pseudo_det = largest singular value
+
+file_format: 1

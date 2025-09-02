@@ -1,0 +1,92 @@
+id: linalg_matrix_power
+label: Matrix Power
+category: '[Linear Algebra]'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.matrix_power_${type.fcn}(${shape}, ${exponent})
+
+parameters:
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, cf, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+
+- id: shape
+  label: Matrix Shape
+  dtype: int_vector
+  default: [3, 3]
+
+- id: exponent
+  label: Exponent
+  dtype: int
+  default: 2
+
+inputs:
+- domain: stream
+  dtype: ${type.t}
+  vlen: ${int(shape[0] * shape[1] if len(shape) >= 2 else shape[0])}
+
+outputs:
+- domain: stream
+  dtype: ${type.t}
+  vlen: ${int(shape[0] * shape[1] if len(shape) >= 2 else shape[0])}
+  optional: false
+
+documentation: |-
+  Matrix Power Operations
+
+  This block performs power operations on matrices in two modes:
+
+  **Element-wise Mode (default):**
+  - Computes (A^p)ij = (Aij)^p for each matrix element
+  - Supports broadcasting: matrix A with exponent p (scalar or matrix)
+  - Works with any exponent type (real, complex, integer)
+  - Examples: A^2 squares each element, A^0.5 takes square root of each element
+
+  **Matrix Power Mode:**
+  - Computes true matrix power A^n = A × A × ... × A (n times)
+  - Requires square matrix input and integer exponent
+  - Uses efficient repeated squaring algorithm
+  - Special cases: A^0 = I (identity), A^(-1) = inverse matrix
+  - Negative exponents: A^(-n) = (A^(-1))^n
+
+  **Input Requirements:**
+  - Matrix: Input matrix (any size for element-wise, square for matrix mode)
+  - Exponent: Power value (scalar for both modes, matrix for element-wise broadcasting)
+
+  **Broadcasting Support (Element-wise mode only):**
+  - A (m×n) ^ p (scalar) → result (m×n)
+  - A (m×n) ^ P (m×n) → result (m×n) [element-wise]
+  - A (m×n) ^ p (1×n) → result (m×n) [broadcast across rows]
+  - A (m×n) ^ p (m×1) → result (m×n) [broadcast across columns]
+
+  **Mathematical Properties:**
+  - Element-wise: Preserves matrix dimensions, supports complex arithmetic
+  - Matrix mode: A^(m+n) = A^m × A^n, (A^m)^n = A^(mn)
+  - Zero handling: 0^p = 0 for p > 0, 0^0 = 1, 0^p = ∞ for p < 0
+
+  **Performance Notes:**
+  - Element-wise mode: O(mn) complexity for m×n matrix
+  - Matrix power mode: O(n³ log k) for n×n matrix and exponent k
+  - Negative exponents require matrix inversion (O(n³))
+  - Large integer exponents use efficient repeated squaring
+
+  **Error Conditions:**
+  - Matrix mode with non-square matrix (if validation enabled)
+  - Matrix mode with non-integer exponent
+  - Negative exponent with singular (non-invertible) matrix
+  - Incompatible shapes for broadcasting in element-wise mode
+
+  **Use Cases:**
+  - Signal processing: Power spectral density, gain adjustments
+  - Control systems: System response analysis, transfer function powers
+  - Statistics: Variance scaling, correlation matrix powers
+  - Numerical analysis: Matrix exponential approximation, iterative methods
+
+file_format: 1

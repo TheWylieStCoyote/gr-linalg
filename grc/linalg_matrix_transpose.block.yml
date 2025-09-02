@@ -1,0 +1,78 @@
+id: linalg_matrix_transpose
+label: Matrix Transpose
+category: '[Linear Algebra]'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.matrix_transpose_${type.fcn}(${shape})
+
+parameters:
+- id: interface
+  label: Interface
+  dtype: enum
+  default: sync
+  options: [sync, pdu]
+  option_labels: [Synchronous, PDU Messages]
+
+- id: type
+  label: Type
+  dtype: enum
+  default: d
+  options: [f, d, cf, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [sync_f, sync_d, sync_cf, sync_cd]
+    t: [float, double, complex, complex]
+
+- id: shape
+  label: Matrix Shape
+  dtype: int_vector
+  default: [2, 2]
+
+inputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape[0] * shape[1] if len(shape) >= 2 else shape[0]) if interface == 'sync' else 1}
+
+outputs:
+- domain: ${'stream' if interface == 'sync' else 'message'}
+  dtype: ${type.t}
+  vlen: ${int(shape[0] * shape[1] if len(shape) >= 2 else shape[0]) if interface == 'sync' else 1}
+
+asserts:
+- ${len(shape) >= 1}
+- ${len(shape) <= 2}
+- ${all([x > 0 for x in shape])}
+
+documentation: |-
+  Computes the transpose of a matrix.
+
+  Mathematical operation: C = A^T
+
+  The transpose operation swaps rows and columns, so an m×n matrix becomes an n×m matrix.
+  For complex matrices, this is the standard transpose (not conjugate transpose).
+
+  Input matrix shape: [m, n]
+  Output matrix shape: [n, m]
+
+  This block supports:
+  - All numeric types (float, double, complex)
+  - Rectangular and square matrices
+  - Real-time streaming operation
+
+  Use cases:
+  - Linear algebra operations
+  - Matrix preparation for multiplication
+  - Symmetric matrix operations
+  - Signal processing transformations
+
+  Parameters:
+  - Type: Data type of matrix elements
+  - Shape: Dimensions of input matrix [rows, cols]
+
+  **Performance Notes:**
+  - O(mn) complexity for m×n matrix
+  - Memory-efficient in-place operations when possible
+  - Optimized memory access patterns
+
+file_format: 1

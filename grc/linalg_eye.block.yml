@@ -1,0 +1,80 @@
+id: linalg_eye
+label: Identity Matrix (Eye)
+category: '[Linear Algebra]'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.eye_${type.fcn}(${shape})
+
+parameters:
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, c, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+
+- id: shape
+  label: Matrix Shape
+  dtype: int_vector
+  default: [3, 3]
+
+inputs: []
+
+outputs:
+- domain: stream
+  dtype: ${type.t}
+  vlen: ${int(shape[0] * shape[1] if len(shape) >= 2 else shape[0])}
+
+asserts:
+- ${len(shape) == 2}
+- ${shape[0] > 0 and shape[1] > 0}
+- ${shape[0] == shape[1]}
+
+documentation: |-
+  Generates identity matrices (eye matrices).
+  
+  Mathematical operation: I(i,j) = 1 if i=j, 0 otherwise
+  
+  An identity matrix is a square matrix with ones on the main diagonal 
+  and zeros elsewhere. It acts as the multiplicative identity for 
+  matrix operations: A × I = I × A = A.
+  
+  This block is a source block that continuously outputs the same 
+  identity matrix pattern.
+  
+  This block supports:
+  - All numeric types (float, double, complex)
+  - Square matrices only (N×N)
+  - Constant output stream
+  
+  Use cases:
+  - Matrix algebra operations
+  - System initialization
+  - Filter initialization
+  - Reference matrix generation
+  - Unit testing matrix operations
+  - Calibration matrices
+  
+  Parameters:
+  - Type: Data type of matrix elements
+  - Shape: Matrix dimensions [rows, cols] (must be equal for square matrix)
+  
+  **Properties:**
+  - Determinant = 1
+  - Rank = N (full rank)
+  - Eigenvalues = 1 (all)
+  - Inverse = I (self-inverse)
+  
+  **Output:**
+  - Continuous stream of identical identity matrices
+  - Use head block to limit number of matrices if needed
+  
+  **Performance Notes:**
+  - O(1) generation time - pattern is pre-computed
+  - Memory efficient storage
+
+file_format: 1

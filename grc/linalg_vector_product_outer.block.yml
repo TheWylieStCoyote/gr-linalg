@@ -1,0 +1,92 @@
+id: linalg_vector_product_outter
+label: Vector Outer Product
+category: '[Linear Algebra]/Vector Operations'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.vector_product_outter_${type.fcn}(${shape_a}, ${shape_b})
+
+parameters:
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, cf, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+
+- id: shape_a
+  label: Vector A Shape
+  dtype: int_vector
+  default: [3]
+
+- id: shape_b
+  label: Vector B Shape
+  dtype: int_vector
+  default: [2]
+
+inputs:
+- label: a
+  domain: stream
+  dtype: ${type.t}
+  vlen: ${int(shape_a[0] if len(shape_a) >= 1 else 1)}
+- label: b
+  domain: stream
+  dtype: ${type.t}
+  vlen: ${int(shape_b[0] if len(shape_b) >= 1 else 1)}
+
+outputs:
+- domain: stream
+  dtype: ${type.t}
+  vlen: ${int(shape_a[0] * shape_b[0] if len(shape_a) >= 1 and len(shape_b) >= 1 else 1)}
+
+asserts:
+- ${len(shape_a) == 1}
+- ${len(shape_b) == 1}
+- ${shape_a[0] > 0 and shape_b[0] > 0}
+
+documentation: |-
+  Computes the outer product of two vectors.
+
+  Mathematical operation: A ⊗ B = [a_i * b_j] where result[i,j] = a_i * b_j
+
+  The outer product creates a matrix from two vectors by multiplying each
+  element of the first vector with each element of the second vector.
+  For vectors of dimensions m and n, the result is an m×n matrix.
+
+  This block supports:
+  - All numeric types (float, double, complex)
+  - Vectors of arbitrary dimensions (can be different)
+  - Matrix output with dimensions [len(a), len(b)]
+
+  Use cases:
+  - Creating basis matrices for linear transformations
+  - Tensor product calculations
+  - Covariance matrix construction
+  - Signal processing outer products
+  - Machine learning weight matrix initialization
+
+  Parameters:
+  - Type: Data type of vector elements
+  - Vector A Shape: Dimensions of first vector [length]
+  - Vector B Shape: Dimensions of second vector [length]
+
+  **Mathematical Properties:**
+  - Result dimensions: |a| × |b|
+  - (A ⊗ B)ᵀ = Bᵀ ⊗ Aᵀ (transpose property)
+  - (A ⊗ B)(C ⊗ D) = (AC) ⊗ (BD) when dimensions match
+  - rank(A ⊗ B) = 1 for non-zero vectors
+
+  **Special Cases:**
+  - Zero vectors: result is zero matrix
+  - Unit vectors: creates basis matrices
+  - Same vector: A ⊗ A creates symmetric rank-1 matrix
+
+  **Performance Notes:**
+  - O(mn) complexity for m×n result matrix
+  - Memory usage: mn elements for output
+  - Efficient streaming implementation
+
+file_format: 1

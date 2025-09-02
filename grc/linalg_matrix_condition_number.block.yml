@@ -1,0 +1,121 @@
+id: linalg_matrix_condition_number
+label: Matrix Condition Number
+category: '[Linear Algebra]'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.matrix_condition_number_${type.fcn}(${shape})
+
+parameters:
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, cf, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+
+- id: shape
+  label: Matrix Shape
+  dtype: int_vector
+  default: [3, 3]
+
+inputs:
+- domain: stream
+  dtype: ${type.t}
+  vlen: ${int(shape[0] * shape[1] if len(shape) >= 2 else shape[0])}
+
+outputs:
+- domain: stream
+  dtype: float
+  vlen: 1
+
+documentation: |-
+  Matrix Condition Number for Numerical Stability Analysis
+
+  Computes the condition number κ(A) of a matrix, measuring sensitivity to perturbations.
+
+  **Mathematical Definition:**
+  κ(A) = σ_max(A) / σ_min(A) = ||A|| × ||A⁻¹||
+
+  Where σ_max and σ_min are the largest and smallest singular values from SVD.
+
+  **Input Requirements:**
+  - matrix: Input matrix of any size (m×n, including square and rectangular)
+  - Supports all scalar types: real and complex numbers
+
+  **Output:**
+  - condition_number: Single scalar value representing the condition number
+  - Always real-valued, even for complex input matrices
+
+  **Condition Number Interpretation:**
+  - **κ ≈ 1**: Well-conditioned (numerically stable)
+  - **κ ≈ 10²-10⁶**: Moderately conditioned
+  - **κ ≈ 10¹²-10¹⁶**: Ill-conditioned (near machine precision)
+  - **κ = ∞**: Singular matrix (rank deficient, no unique solution)
+
+  **Algorithm:**
+  Uses robust Singular Value Decomposition (SVD) for maximum accuracy:
+  1. Compute A = U Σ Vᵀ via Jacobi SVD
+  2. Extract singular values σᵢ from diagonal matrix Σ
+  3. Return κ(A) = max(σᵢ) / min(σᵢ)
+  4. Handle edge cases: zero/empty matrices, numerical underflow
+
+  **Matrix Type Support:**
+  - **Square Matrices (n×n)**: Standard condition number computation
+  - **Rectangular Matrices (m×n)**: Generalized condition number
+  - **Complex Matrices**: Uses magnitude of singular values
+  - **Special Cases**: Identity (κ=1), zero matrix (κ=∞), single element
+
+  **Applications:**
+  - **Linear System Analysis**: Assess stability of Ax = b solutions
+  - **Matrix Inversion Safety**: Determine if inversion is numerically safe
+  - **Least Squares Problems**: Evaluate solution reliability
+  - **Filter Design**: Stability analysis of digital filters
+  - **Control Systems**: Robustness and stability assessment
+  - **Signal Processing**: Numerical algorithm selection
+  - **Optimization**: Convergence analysis and preconditioning
+
+  **Performance Characteristics:**
+  - **Time Complexity**: O(min(m²n, mn²)) for m×n matrix
+  - **Space Complexity**: O(mn) for SVD workspace
+  - **Numerical Accuracy**: Uses industry-standard SVD algorithms
+  - **Robust Handling**: Automatic tolerance adjustment for matrix size
+
+  **Error Detection:**
+  - Infinite condition number indicates singular/rank-deficient matrix
+  - Very large condition numbers (>10¹²) suggest numerical instability
+  - Near-zero matrices handled gracefully with appropriate infinity values
+
+  **Edge Case Handling:**
+  - **Empty Matrix**: Returns κ = ∞
+  - **Zero Matrix**: Returns κ = ∞
+  - **Single Element**: Returns κ = 1 (non-zero) or κ = ∞ (zero)
+  - **Numerical Overflow**: Protected against floating-point overflow
+
+  **Usage Guidelines:**
+  - For solving Ax = b: κ < 10⁶ typically indicates reliable solutions
+  - For matrix inversion: κ < 10¹² suggests safe numerical inversion
+  - For iterative methods: κ affects convergence rate (lower is better)
+  - Monitor condition numbers in adaptive algorithms for stability
+
+  **Mathematical Properties:**
+  - κ(A) ≥ 1 for all invertible matrices
+  - κ(I) = 1 for identity matrix
+  - κ(cA) = κ(A) for any non-zero scalar c
+  - κ(A) = κ(Aᵀ) for real matrices
+  - κ(A) = κ(A*) for complex matrices (conjugate transpose)
+
+  **Computational Notes:**
+  - Uses Eigen's JacobiSVD for maximum numerical stability
+  - Automatically adjusts tolerance based on matrix dimensions
+  - Handles both thin and full SVD as appropriate for efficiency
+  - Complex matrices processed with magnitude-based singular value comparison
+
+  This block provides essential numerical analysis capabilities for assessing matrix
+  conditioning in linear algebra applications, enabling robust algorithm design and
+  numerical stability monitoring in signal processing systems.
+
+file_format: 1

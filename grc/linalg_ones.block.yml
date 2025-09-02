@@ -1,0 +1,79 @@
+id: linalg_ones
+label: Ones Matrix
+category: '[Linear Algebra]'
+
+templates:
+  imports: from gnuradio import linalg
+  make: linalg.ones_${type.fcn}(${shape})
+
+parameters:
+- id: type
+  label: Type
+  dtype: enum
+  default: f
+  options: [f, d, c, cd]
+  option_labels: [Float, Double, Complex Float, Complex Double]
+  option_attributes:
+    fcn: [ff, dd, cc, zz]
+    t: [float, double, complex, complex]
+
+- id: shape
+  label: Matrix Shape
+  dtype: int_vector
+  default: [3, 3]
+
+inputs: []
+
+outputs:
+- domain: stream
+  dtype: ${type.t}
+  vlen: ${int(shape[0] * shape[1] if len(shape) >= 2 else shape[0])}
+
+asserts:
+- ${len(shape) == 2}
+- ${shape[0] > 0 and shape[1] > 0}
+
+documentation: |-
+  Generates matrices filled with ones.
+  
+  Mathematical operation: M(i,j) = 1 for all i,j
+  
+  A ones matrix is filled entirely with the value 1. It's useful 
+  for initialization, testing, and as a building block for other 
+  matrix operations.
+  
+  This block is a source block that continuously outputs the same 
+  ones matrix pattern.
+  
+  This block supports:
+  - All numeric types (float, double, complex)
+  - Any matrix dimensions (M×N)
+  - Constant output stream
+  
+  Use cases:
+  - Matrix initialization
+  - Bias term addition
+  - Constant reference signals
+  - Testing matrix operations
+  - Normalization denominators
+  - Filter coefficient initialization
+  
+  Parameters:
+  - Type: Data type of matrix elements
+  - Shape: Matrix dimensions [rows, cols]
+  
+  **Mathematical Properties:**
+  - All elements equal to 1
+  - Rank = 1 (for non-empty matrices)
+  - Sum of elements = rows × cols
+  - Matrix norm depends on dimensions
+  
+  **Output:**
+  - Continuous stream of identical ones matrices
+  - Use head block to limit number of matrices if needed
+  
+  **Performance Notes:**
+  - O(1) generation time - pattern is pre-computed
+  - Memory efficient storage
+
+file_format: 1
